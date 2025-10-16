@@ -1,0 +1,175 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de usuários
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  name              String
+  avatar            String?
+  emailVerified     Boolean  @default(false)
+  emailVerifiedAt   DateTime?
+  twoFactorEnabled  Boolean  @default(false)
+  twoFactorSecret   String?
+  isActive          Boolean  @default(true)
+  lastLoginAt       DateTime?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  accounts      Account[]
+  transactions  Transaction[]
+  categories    Category[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+// Tokens de refresh
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(500)
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// Tipos de conta (enum)
+enum AccountType {
+  CHECKING    // Conta corrente
+  SAVINGS     // Poupança
+  CREDIT_CARD // Cartão de crédito
+  INVESTMENT  // Investimento
+  CASH        // Dinheiro
+  OTHER       // Outros
+
+  @@map("account_type")
+}
+
+// Contas financeiras
+model Account {
+  id              String      @id @default(cuid())
+  name            String
+  type            AccountType
+  balance         Decimal     @default(0.00) @db.Decimal(15, 2)
+  currency        String      @default("BRL")
+  color           String?     // Cor para identificação visual
+  icon            String?     // Ícone para identificação visual
+  description     String?
+  creditLimit     Decimal?    @db.Decimal(15, 2) // Para cartões de crédito
+  interestRate    Decimal?    @db.Decimal(5, 4)  // Taxa de juros
+  isActive        Boolean     @default(true)
+  includeInTotal  Boolean     @default(true)      // Incluir no saldo total
+  userId          String      @map("user_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactionsFrom    Transaction[] @relation("TransactionFromAccount")
+  transactionsTo      Transaction[] @relation("TransactionToAccount")
+
+  @@map("accounts")
+}
+
+// Tipos de transação (enum)
+enum TransactionType {
+  INCOME    // Receita
+  EXPENSE   // Despesa
+  TRANSFER  // Transferência
+
+  @@map("transaction_type")
+}
+
+// Status de transação (enum)
+enum TransactionStatus {
+  PENDING   // Pendente
+  COMPLETED // Concluída
+  CANCELLED // Cancelada
+
+  @@map("transaction_status")
+}
+
+// Categorias
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  color       String? // Cor para identificação visual
+  icon        String? // Ícone para identificação visual
+  description String?
+  isActive    Boolean @default(true)
+  userId      String  @map("user_id")
+  parentId    String? @map("parent_id") // Para subcategorias
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent       Category?     @relation("CategorySubcategories", fields: [parentId], references: [id])
+  subcategories Category[]   @relation("CategorySubcategories")
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+// Transações
+model Transaction {
+  id          String            @id @default(cuid())
+  type        TransactionType
+  status      TransactionStatus @default(COMPLETED)
+  amount      Decimal           @db.Decimal(15, 2)
+  description String
+  notes       String?           @db.Text
+  date        DateTime
+  dueDate     DateTime?         @map("due_date") // Para transações recorrentes
+  tags        String?           // Tags separadas por vírgula
+  
+  // Contas envolvidas
+  fromAccountId String? @map("from_account_id")
+  toAccountId   String? @map("to_account_id")
+  
+  // Categoria e usuário
+  categoryId String? @map("category_id")
+  userId     String  @map("user_id")
+  
+  // Transação recorrente
+  isRecurring     Boolean @default(false) @map("is_recurring")
+  recurringRule   String? @map("recurring_rule") // JSON com regras de recorrência
+  parentId        String? @map("parent_id") // Para transações filhas de uma recorrente
+  
+  // Anexos
+  attachments String? // JSON com URLs dos anexos
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  fromAccount Account?    @relation("TransactionFromAccount", fields: [fromAccountId], references: [id])
+  toAccount   Account?    @relation("TransactionToAccount", fields: [toAccountId], references: [id])
+  parent      Transaction? @relation("TransactionRecurring", fields: [parentId], references: [id])
+  children    Transaction[] @relation("TransactionRecurring")
+
+  @@map("transactions")
+}

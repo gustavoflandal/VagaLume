@@ -1,0 +1,83 @@
+{
+  "name": "vagalume",
+  "version": "1.0.0",
+  "description": "Sistema de gestão financeira pessoal em JavaScript/TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend-vue && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend-vue && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend-vue && npm run preview",
+    "start": "npm run start:backend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend-vue && npm run test:unit",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:e2e": "cd frontend-vue && npm run test:e2e",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend-vue && npm run lint",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "setup": "npm run install:all && npm run db:setup",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend-vue && npm install",
+    "db:setup": "cd backend && npm run db:migrate && npm run db:seed",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed",
+    "db:reset": "cd backend && npm run db:reset",
+    "docker:dev": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
+    "clean": "rm -rf node_modules backend/node_modules frontend-vue/node_modules backend/dist frontend-vue/dist",
+    "postinstall": "husky install"
+  },
+  "keywords": [
+    "finance",
+    "personal-finance",
+    "typescript",
+    "vue",
+    "nodejs",
+    "mysql",
+    "portuguese",
+    "brazil"
+  ],
+  "author": {
+    "name": "Seu Nome",
+    "email": "seu.email@exemplo.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/vagalume.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seu-usuario/vagalume/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/vagalume#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}

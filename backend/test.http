@@ -1,0 +1,48 @@
+### VagaLume API - Testes de Autenticação
+@baseUrl = http://localhost:3001/api
+@contentType = application/json
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+### 2. Registrar novo usuário
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "Senha@123"
+}
+
+### 3. Login com usuário demo
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "demo@vagalume.com.br",
+  "password": "Demo@2025"
+}
+
+### 4. Obter perfil do usuário autenticado
+@accessToken = {{login.response.body.tokens.accessToken}}
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### 5. Refresh token
+@refreshToken = {{login.response.body.tokens.refreshToken}}
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 6. Logout
+POST {{baseUrl}}/auth/logout
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}

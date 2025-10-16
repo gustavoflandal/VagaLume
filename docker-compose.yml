@@ -1,0 +1,106 @@
+services:
+  # Banco de Dados MySQL 8.0 LTS
+  database:
+    image: mysql:8.0.35-debian
+    container_name: vagalume_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: vagalume
+      MYSQL_USER: vagalume
+      MYSQL_PASSWORD: vagalume123
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - vagalume_network
+
+  # Cache Redis (opcional)
+  redis:
+    image: redis:7-alpine
+    container_name: vagalume_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vagalume_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: vagalume_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: mysql://vagalume:vagalume123@database:3306/vagalume
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - uploads_data:/app/uploads
+    depends_on:
+      - database
+      - redis
+    networks:
+      - vagalume_network
+    command: npm run dev
+
+  # Frontend Vue.js
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: vagalume_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      VITE_API_BASE_URL: http://localhost:3001/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - vagalume_network
+    command: npm run dev
+
+  # Nginx Reverse Proxy (opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: vagalume_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.dev.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - vagalume_network
+
+volumes:
+  mysql_data:
+  redis_data:
+  uploads_data:
+
+networks:
+  vagalume_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
