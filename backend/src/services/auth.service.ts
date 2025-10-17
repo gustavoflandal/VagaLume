@@ -1,10 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
 import config from '@/config';
+import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
-
-const prisma = new PrismaClient();
 
 export interface RegisterDTO {
   name: string;

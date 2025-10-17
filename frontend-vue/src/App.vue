@@ -2,6 +2,7 @@
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { onMounted } from 'vue'
+import ToastContainer from '@/components/ToastContainer.vue'
 
 const authStore = useAuthStore()
 
@@ -14,6 +15,7 @@ onMounted(() => {
 <template>
   <div id="app" class="min-h-screen">
     <RouterView />
+    <ToastContainer />
   </div>
 </template>
 

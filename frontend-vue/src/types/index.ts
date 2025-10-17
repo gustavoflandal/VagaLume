@@ -46,6 +46,7 @@ export interface Account {
   name: string
   type: AccountType
   balance: number
+  initialBalance: number
   currency: string
   description?: string
   isActive: boolean
@@ -58,6 +59,7 @@ export interface CreateAccountData {
   name: string
   type: AccountType
   balance: number
+  initialBalance?: number
   currency?: string
   description?: string
 }

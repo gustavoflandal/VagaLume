@@ -64,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     try {
       if (refreshToken.value) {
-        await authService.logout()
+        await authService.logout(refreshToken.value)
       }
     } catch (err) {
       console.error('Erro ao fazer logout:', err)

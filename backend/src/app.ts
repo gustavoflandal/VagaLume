@@ -17,6 +17,17 @@ import userRoutes from '@/routes/users';
 import accountRoutes from '@/routes/accounts';
 import transactionRoutes from '@/routes/transactions';
 import categoryRoutes from '@/routes/categories';
+import piggyBankRoutes from '@/routes/piggyBanks';
+import billRoutes from '@/routes/bills';
+import budgetRoutes from '@/routes/budgets';
+import ruleRoutes from '@/routes/rules';
+// import recurrenceRoutes from '@/routes/recurrences'; // Temporariamente desabilitado
+// import tagRoutes from '@/routes/tags'; // Temporariamente desabilitado (falta TransactionTag)
+// import attachmentRoutes from '@/routes/attachments'; // Temporariamente desabilitado
+// import locationRoutes from '@/routes/locations'; // Temporariamente desabilitado
+import objectGroupRoutes from '@/routes/objectGroups';
+import webhookRoutes from '@/routes/webhooks';
+import transactionLinkRoutes from '@/routes/transactionLinks';
 
 class App {
   public app: express.Application;
@@ -35,13 +46,13 @@ class App {
         directives: {
           defaultSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
           imgSrc: ["'self'", "data:", "https:"],
         },
       },
     }));
 
     // CORS configuration
+    logger.info(`CORS configurado para origem: ${config.cors.origin}`);
     this.app.use(cors({
       origin: config.cors.origin,
       methods: config.cors.methods.split(','),
@@ -126,6 +137,121 @@ class App {
             update: 'PUT /api/categories/:id',
             delete: 'DELETE /api/categories/:id',
           },
+          piggyBanks: {
+            list: 'GET /api/piggy-banks',
+            statistics: 'GET /api/piggy-banks/statistics',
+            create: 'POST /api/piggy-banks',
+            details: 'GET /api/piggy-banks/:id',
+            update: 'PUT /api/piggy-banks/:id',
+            delete: 'DELETE /api/piggy-banks/:id',
+            addMoney: 'POST /api/piggy-banks/:id/add-money',
+            removeMoney: 'POST /api/piggy-banks/:id/remove-money',
+          },
+          bills: {
+            list: 'GET /api/bills',
+            upcoming: 'GET /api/bills/upcoming',
+            statistics: 'GET /api/bills/statistics',
+            create: 'POST /api/bills',
+            details: 'GET /api/bills/:id',
+            update: 'PUT /api/bills/:id',
+            delete: 'DELETE /api/bills/:id',
+            autoMatch: 'GET /api/bills/:id/auto-match',
+            linkTransaction: 'POST /api/bills/:id/link-transaction',
+          },
+          budgets: {
+            list: 'GET /api/budgets',
+            create: 'POST /api/budgets',
+            details: 'GET /api/budgets/:id',
+            update: 'PUT /api/budgets/:id',
+            delete: 'DELETE /api/budgets/:id',
+            check: 'GET /api/budgets/:id/check',
+            createLimit: 'POST /api/budgets/limits',
+            updateLimit: 'PUT /api/budgets/limits/:id',
+            deleteLimit: 'DELETE /api/budgets/limits/:id',
+            setAutoBudget: 'POST /api/budgets/:id/auto-budget',
+            removeAutoBudget: 'DELETE /api/budgets/:id/auto-budget',
+          },
+          rules: {
+            listGroups: 'GET /api/rules/groups',
+            createGroup: 'POST /api/rules/groups',
+            groupDetails: 'GET /api/rules/groups/:id',
+            updateGroup: 'PUT /api/rules/groups/:id',
+            deleteGroup: 'DELETE /api/rules/groups/:id',
+            create: 'POST /api/rules',
+            details: 'GET /api/rules/:id',
+            update: 'PUT /api/rules/:id',
+            delete: 'DELETE /api/rules/:id',
+            test: 'GET /api/rules/:id/test',
+            apply: 'POST /api/rules/:id/apply',
+          },
+          recurrences: {
+            list: 'GET /api/recurrences',
+            create: 'POST /api/recurrences',
+            details: 'GET /api/recurrences/:id',
+            update: 'PUT /api/recurrences/:id',
+            delete: 'DELETE /api/recurrences/:id',
+            nextOccurrences: 'GET /api/recurrences/:id/next-occurrences',
+            generateAll: 'POST /api/recurrences/generate-all',
+          },
+          tags: {
+            list: 'GET /api/tags',
+            cloud: 'GET /api/tags/cloud',
+            search: 'GET /api/tags/search',
+            statistics: 'GET /api/tags/statistics',
+            create: 'POST /api/tags',
+            details: 'GET /api/tags/:id',
+            update: 'PUT /api/tags/:id',
+            delete: 'DELETE /api/tags/:id',
+            link: 'POST /api/tags/:id/link',
+            unlink: 'DELETE /api/tags/:id/unlink/:transactionId',
+          },
+          attachments: {
+            list: 'GET /api/attachments',
+            byEntity: 'GET /api/attachments/entity/:type/:id',
+            statistics: 'GET /api/attachments/statistics',
+            create: 'POST /api/attachments',
+            details: 'GET /api/attachments/:id',
+            update: 'PUT /api/attachments/:id',
+            delete: 'DELETE /api/attachments/:id',
+            markUploaded: 'POST /api/attachments/:id/uploaded',
+          },
+          locations: {
+            nearby: 'GET /api/locations/nearby',
+            details: 'GET /api/locations/:id',
+            upsert: 'POST /api/locations',
+            delete: 'DELETE /api/locations/:id',
+          },
+          objectGroups: {
+            list: 'GET /api/object-groups',
+            create: 'POST /api/object-groups',
+            details: 'GET /api/object-groups/:id',
+            update: 'PUT /api/object-groups/:id',
+            delete: 'DELETE /api/object-groups/:id',
+            reorder: 'POST /api/object-groups/reorder',
+          },
+          webhooks: {
+            list: 'GET /api/webhooks',
+            statistics: 'GET /api/webhooks/statistics',
+            create: 'POST /api/webhooks',
+            details: 'GET /api/webhooks/:id',
+            update: 'PUT /api/webhooks/:id',
+            delete: 'DELETE /api/webhooks/:id',
+            test: 'POST /api/webhooks/:id/test',
+            retry: 'POST /api/webhooks/:id/retry',
+            history: 'GET /api/webhooks/:id/history',
+            processPending: 'POST /api/webhooks/process-pending',
+          },
+          transactionLinks: {
+            listTypes: 'GET /api/transaction-links/types',
+            createType: 'POST /api/transaction-links/types',
+            typeDetails: 'GET /api/transaction-links/types/:id',
+            updateType: 'PUT /api/transaction-links/types/:id',
+            deleteType: 'DELETE /api/transaction-links/types/:id',
+            seedTypes: 'POST /api/transaction-links/types/seed',
+            byTransaction: 'GET /api/transaction-links/transaction/:transactionId',
+            create: 'POST /api/transaction-links',
+            delete: 'DELETE /api/transaction-links/:id',
+          },
         },
         documentation: config.features.swaggerEnabled && config.nodeEnv !== 'production' 
           ? `http://localhost:${config.port}/api/docs` 
@@ -140,6 +266,17 @@ class App {
     this.app.use('/api/accounts', accountRoutes);
     this.app.use('/api/transactions', transactionRoutes);
     this.app.use('/api/categories', categoryRoutes);
+    this.app.use('/api/piggy-banks', piggyBankRoutes);
+    this.app.use('/api/bills', billRoutes);
+    this.app.use('/api/budgets', budgetRoutes);
+    this.app.use('/api/rules', ruleRoutes);
+    // this.app.use('/api/recurrences', recurrenceRoutes); // Temporariamente desabilitado
+    // this.app.use('/api/tags', tagRoutes); // Temporariamente desabilitado (falta TransactionTag)
+    // this.app.use('/api/attachments', attachmentRoutes); // Temporariamente desabilitado
+    // this.app.use('/api/locations', locationRoutes); // Temporariamente desabilitado
+    this.app.use('/api/object-groups', objectGroupRoutes);
+    this.app.use('/api/webhooks', webhookRoutes);
+    this.app.use('/api/transaction-links', transactionLinkRoutes);
 
     // API documentation
     if (config.features.swaggerEnabled && config.nodeEnv !== 'production') {

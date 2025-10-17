@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
-
-const prisma = new PrismaClient();
 
 export interface UpdateUserDTO {
   name?: string;

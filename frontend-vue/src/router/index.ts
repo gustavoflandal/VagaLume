@@ -30,6 +30,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/accounts/AccountsView.vue'),
       },
       {
+        path: 'accounts/:id',
+        name: 'AccountDetails',
+        component: () => import('@/views/accounts/AccountDetailsView.vue'),
+      },
+      {
         path: 'transactions',
         name: 'Transactions',
         component: () => import('@/views/transactions/TransactionsView.vue'),
@@ -38,6 +43,106 @@ const routes: RouteRecordRaw[] = [
         path: 'categories',
         name: 'Categories',
         component: () => import('@/views/categories/CategoriesView.vue'),
+      },
+      {
+        path: 'piggy-banks',
+        name: 'PiggyBanks',
+        component: () => import('@/views/piggyBanks/PiggyBanksView.vue'),
+      },
+      {
+        path: 'piggy-banks/new',
+        name: 'PiggyBankNew',
+        component: () => import('@/views/piggyBanks/PiggyBanksView.vue'), // Temporário
+      },
+      {
+        path: 'bills',
+        name: 'Bills',
+        component: () => import('@/views/bills/BillsView.vue'),
+      },
+      {
+        path: 'bills/new',
+        name: 'BillNew',
+        component: () => import('@/views/bills/BillsView.vue'), // Temporário
+      },
+      {
+        path: 'budgets',
+        name: 'Budgets',
+        component: () => import('@/views/budgets/BudgetsView.vue'),
+      },
+      {
+        path: 'budgets/new',
+        name: 'BudgetNew',
+        component: () => import('@/views/budgets/BudgetsView.vue'), // Temporário
+      },
+      {
+        path: 'rules',
+        name: 'Rules',
+        component: () => import('@/views/rules/RulesView.vue'),
+      },
+      {
+        path: 'rules/new',
+        name: 'RuleNew',
+        component: () => import('@/views/rules/RulesView.vue'), // Temporário
+      },
+      {
+        path: 'rules/groups/new',
+        name: 'RuleGroupNew',
+        component: () => import('@/views/rules/RulesView.vue'), // Temporário
+      },
+      {
+        path: 'recurrences',
+        name: 'Recurrences',
+        component: () => import('@/views/recurrences/RecurrencesView.vue'),
+      },
+      {
+        path: 'tags',
+        name: 'Tags',
+        component: () => import('@/views/tags/TagsView.vue'),
+      },
+      {
+        path: 'webhooks',
+        name: 'Webhooks',
+        component: () => import('@/views/webhooks/WebhooksView.vue'),
+      },
+      {
+        path: 'reports',
+        name: 'Reports',
+        component: () => import('@/views/reports/ReportsView.vue'),
+      },
+      {
+        path: 'reports/expenses-by-category',
+        name: 'ReportExpensesByCategory',
+        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+      },
+      {
+        path: 'reports/income-vs-expenses',
+        name: 'ReportIncomeVsExpenses',
+        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+      },
+      {
+        path: 'reports/budget-analysis',
+        name: 'ReportBudgetAnalysis',
+        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+      },
+      {
+        path: 'reports/piggy-banks',
+        name: 'ReportPiggyBanks',
+        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+      },
+      {
+        path: 'reports/recurring-bills',
+        name: 'ReportRecurringBills',
+        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+      },
+      {
+        path: 'reports/tags',
+        name: 'ReportTags',
+        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('@/views/SettingsView.vue'),
       },
       {
         path: 'profile',
@@ -54,7 +159,7 @@ const router = createRouter({
 })
 
 // Navigation guards
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {

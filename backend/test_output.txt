@@ -1,0 +1,410 @@
+
+> vagalume-backend@1.0.0 test
+> cross-env NODE_ENV=test jest transactions.test
+
+  console.log
+    prisma:info Starting a mysql pool with 57 connections.
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.TransactionLink' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.TransactionLinkType' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.WebhookDelivery' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Webhook' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.ObjectGroup' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Location' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Attachment' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.TransactionTag' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Tag' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.RecurrenceTransaction' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.RecurrenceRepetitionConfig' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Recurrence' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.RuleAction' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.RuleCondition' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Rule' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.RuleGroup' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.AutoBudget' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.BudgetLimit' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Budget' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.BillTransaction' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Bill' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.PiggyBankEvent' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.PiggyBank' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Transaction' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Category' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.Account' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+  console.log
+    prisma:error 
+    Invalid `prisma.$executeRawUnsafe()` invocation:
+    
+    
+    Raw query failed. Code: `1146`. Message: `Table 'vagalume_test.User' doesn't exist`
+
+      at Object.mc (node_modules/@prisma/client/runtime/library.js:21:432)
+
+19:59:00 [[31merror[39m]: Erro ao buscar transa├º├úo: Transa├º├úo n├úo encontrada {"stack":"Error: Transa├º├úo n├úo encontrada\n    at TransactionService.findById (E:\\VagaLume\\backend\\src\\services\\transaction.service.ts:111:13)\n    at TransactionsController.getById (E:\\VagaLume\\backend\\src\\controllers\\transactions.controller.ts:54:27)"}
+19:59:00 [[31merror[39m]: Erro ao atualizar transa├º├úo: Transa├º├úo n├úo encontrada {"stack":"Error: Transa├º├úo n├úo encontrada\n    at TransactionService.findById (E:\\VagaLume\\backend\\src\\services\\transaction.service.ts:111:13)\n    at TransactionService.update (E:\\VagaLume\\backend\\src\\services\\transaction.service.ts:190:28)\n    at TransactionsController.update (E:\\VagaLume\\backend\\src\\controllers\\transactions.controller.ts:81:27)"}
+19:59:00 [[31merror[39m]: Erro ao excluir transa├º├úo: Transa├º├úo n├úo encontrada {"stack":"Error: Transa├º├úo n├úo encontrada\n    at TransactionService.findById (E:\\VagaLume\\backend\\src\\services\\transaction.service.ts:111:13)\n    at TransactionService.delete (E:\\VagaLume\\backend\\src\\services\\transaction.service.ts:243:25)\n    at TransactionsController.delete (E:\\VagaLume\\backend\\src\\controllers\\transactions.controller.ts:95:7)"}
+FAIL tests/integration/transactions.test.ts
+  Transactions API
+    POST /api/transactions
+      ├ù deve criar uma receita (INCOME) com sucesso (74 ms)
+      ├ù deve criar uma despesa (EXPENSE) com sucesso (13 ms)
+      ├ù deve criar uma transfer├¬ncia (TRANSFER) com sucesso (9 ms)
+      ├ù deve criar transa├º├úo com status PENDING (10 ms)
+      ÔêÜ deve retornar erro 400 se INCOME sem conta de destino (12 ms)
+      ÔêÜ deve retornar erro 400 se EXPENSE sem conta de origem (9 ms)
+      ÔêÜ deve retornar erro 400 se TRANSFER sem ambas as contas (8 ms)
+      ÔêÜ deve retornar erro 400 se TRANSFER com mesma conta origem e destino (9 ms)
+      ÔêÜ deve retornar erro 400 se valor negativo (12 ms)
+      ÔêÜ deve retornar erro 400 se descri├º├úo vazia (9 ms)
+      ÔêÜ deve retornar erro 401 se n├úo autenticado (7 ms)
+    GET /api/transactions
+      ÔêÜ deve listar todas as transa├º├Áes do usu├írio (38 ms)
+      ÔêÜ deve filtrar transa├º├Áes por tipo (16 ms)
+      ÔêÜ deve filtrar transa├º├Áes por categoria (11 ms)
+      ÔêÜ deve retornar erro 401 se n├úo autenticado (4 ms)
+    GET /api/transactions/summary
+      ├ù deve retornar resumo financeiro (18 ms)
+      ÔêÜ deve filtrar resumo por per├¡odo (11 ms)
+    GET /api/transactions/:id
+      ÔêÜ deve retornar uma transa├º├úo espec├¡fica (26 ms)
+      ÔêÜ deve retornar erro se transa├º├úo n├úo encontrada (18 ms)
+    PUT /api/transactions/:id
+      ├ù deve atualizar uma transa├º├úo com sucesso (64 ms)
+      ÔêÜ deve retornar erro se transa├º├úo n├úo encontrada (10 ms)
+    DELETE /api/transactions/:id
+      ÔêÜ deve excluir uma transa├º├úo com sucesso (44 ms)
+      ÔêÜ deve retornar erro se transa├º├úo n├úo encontrada (11 ms)
+      ÔêÜ deve retornar erro 401 se n├úo autenticado (14 ms)
+
+  ÔùÅ Transactions API ÔÇ║ POST /api/transactions ÔÇ║ deve criar uma receita (INCOME) com sucesso
+
+    expected 201 "Created", got 400 "Bad Request"
+
+      47 |         .set('Authorization', `Bearer ${token}`)
+      48 |         .send(transactionData)
+    > 49 |         .expect(201);
+         |          ^
+      50 |
+      51 |       expect(response.body).toHaveProperty('success', true);
+      52 |       expect(response.body.data.type).toBe('INCOME');
+
+      at Object.<anonymous> (tests/integration/transactions.test.ts:49:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:252:14)
+      at node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:120:14)
+
+  ÔùÅ Transactions API ÔÇ║ POST /api/transactions ÔÇ║ deve criar uma despesa (EXPENSE) com sucesso
+
+    expected 201 "Created", got 400 "Bad Request"
+
+      70 |         .set('Authorization', `Bearer ${token}`)
+      71 |         .send(transactionData)
+    > 72 |         .expect(201);
+         |          ^
+      73 |
+      74 |       expect(response.body).toHaveProperty('success', true);
+      75 |       expect(response.body.data.type).toBe('EXPENSE');
+
+      at Object.<anonymous> (tests/integration/transactions.test.ts:72:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:252:14)
+      at node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:120:14)
+
+  ÔùÅ Transactions API ÔÇ║ POST /api/transactions ÔÇ║ deve criar uma transfer├¬ncia (TRANSFER) com sucesso
+
+    expected 201 "Created", got 400 "Bad Request"
+
+      92 |         .set('Authorization', `Bearer ${token}`)
+      93 |         .send(transactionData)
+    > 94 |         .expect(201);
+         |          ^
+      95 |
+      96 |       expect(response.body).toHaveProperty('success', true);
+      97 |       expect(response.body.data.type).toBe('TRANSFER');
+
+      at Object.<anonymous> (tests/integration/transactions.test.ts:94:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:252:14)
+      at node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:120:14)
+
+  ÔùÅ Transactions API ÔÇ║ POST /api/transactions ÔÇ║ deve criar transa├º├úo com status PENDING
+
+    expected 201 "Created", got 400 "Bad Request"
+
+      114 |         .set('Authorization', `Bearer ${token}`)
+      115 |         .send(transactionData)
+    > 116 |         .expect(201);
+          |          ^
+      117 |
+      118 |       expect(response.body.data.status).toBe('PENDING');
+      119 |     });
+
+      at Object.<anonymous> (tests/integration/transactions.test.ts:116:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:252:14)
+      at node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:120:14)
+
+  ÔùÅ Transactions API ÔÇ║ GET /api/transactions/summary ÔÇ║ deve retornar resumo financeiro
+
+    expect(received).toHaveProperty(path)
+
+    Expected path: "totalIncome"
+    Received path: []
+
+    Received value: {"balance": -50, "expense": {"count": 1, "total": 50}, "income": {"count": 0, "total": 0}, "transfers": {"count": 0, "total": 0}}
+
+      284 |
+      285 |       expect(response.body).toHaveProperty('success', true);
+    > 286 |       expect(response.body.data).toHaveProperty('totalIncome');
+          |                                  ^
+      287 |       expect(response.body.data).toHaveProperty('totalExpense');
+      288 |       expect(response.body.data).toHaveProperty('balance');
+      289 |     });
+
+      at Object.<anonymous> (tests/integration/transactions.test.ts:286:34)
+
+  ÔùÅ Transactions API ÔÇ║ PUT /api/transactions/:id ÔÇ║ deve atualizar uma transa├º├úo com sucesso
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 150
+    Received: "150"
+
+      352 |       expect(response.body).toHaveProperty('success', true);
+      353 |       expect(response.body.data.description).toBe(updateData.description);
+    > 354 |       expect(response.body.data.amount).toBe(updateData.amount);
+          |                                         ^
+      355 |     });
+      356 |
+      357 |     it('deve retornar erro se transa├º├úo n├úo encontrada', async () => {
+
+      at Object.<anonymous> (tests/integration/transactions.test.ts:354:41)
+
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 18 passed, 24 total
+Snapshots:   0 total
+Time:        2.349 s
+Ran all test suites matching /transactions.test/i.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

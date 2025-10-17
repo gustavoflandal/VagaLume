@@ -56,4 +56,4 @@ if (process.env['NODE_ENV'] !== 'test') {
     logger.error('❌ Erro fatal:', error);
     process.exit(1);
   });
-}
+} 

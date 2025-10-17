@@ -43,7 +43,7 @@ api.interceptors.response.use(
 
       try {
         // Tenta refresh token
-        await authStore.refreshToken()
+        await authStore.refreshAccessToken()
         
         // Retry original request
         if (originalRequest.headers && authStore.accessToken) {

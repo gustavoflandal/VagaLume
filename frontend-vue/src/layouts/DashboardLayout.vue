@@ -11,6 +11,13 @@ import {
   TagIcon,
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
+  BanknotesIcon as PiggyBankIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  Cog6ToothIcon,
+  ClockIcon,
+  LinkIcon,
+  CogIcon,
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -24,6 +31,15 @@ const navigation = [
   { name: 'Contas', to: '/accounts', icon: BanknotesIcon },
   { name: 'Transações', to: '/transactions', icon: ArrowsRightLeftIcon },
   { name: 'Categorias', to: '/categories', icon: TagIcon },
+  { name: 'Cofrinhos', to: '/piggy-banks', icon: PiggyBankIcon },
+  { name: 'Contas Recorrentes', to: '/bills', icon: DocumentTextIcon },
+  { name: 'Orçamentos', to: '/budgets', icon: ChartBarIcon },
+  { name: 'Regras', to: '/rules', icon: Cog6ToothIcon },
+  { name: 'Recorrências', to: '/recurrences', icon: ClockIcon },
+  { name: 'Tags', to: '/tags', icon: TagIcon },
+  { name: 'Webhooks', to: '/webhooks', icon: LinkIcon },
+  { name: 'Relatórios', to: '/reports', icon: ChartBarIcon },
+  { name: 'Configurações', to: '/settings', icon: CogIcon },
   { name: 'Perfil', to: '/profile', icon: UserCircleIcon },
 ]
 
