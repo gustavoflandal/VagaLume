@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated } from 'vue'
+import { useRouter } from 'vue-router'
 import { accountService } from '@/services/account.service'
+import { transactionService } from '@/services/transaction.service'
 import { AccountType, type Account } from '@/types'
 import { XMarkIcon, PencilIcon, TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
+
+const router = useRouter()
 
 const accounts = ref<Account[]>([])
 const isLoading = ref(true)
@@ -13,23 +17,102 @@ const form = ref({
   name: '',
   type: AccountType.CHECKING,
   balance: 0,
+  initialBalance: 0,
   description: ''
 })
 
 onMounted(async () => {
+  console.log('AccountsView montado')
+  await loadAccounts()
+})
+
+// Recarregar quando a view for ativada (útil para keep-alive)
+onActivated(async () => {
+  console.log('AccountsView ativado')
   await loadAccounts()
 })
 
 async function loadAccounts() {
   try {
     isLoading.value = true
+    console.log('Carregando contas...')
     const accountsData = await accountService.getAll()
-    accounts.value = Array.isArray(accountsData) ? accountsData : []
+    console.log('Contas recebidas:', accountsData)
+    
+    if (!Array.isArray(accountsData)) {
+      console.warn('accountsData não é um array')
+      accounts.value = []
+      return
+    }
+    
+    // Calcular saldo real de cada conta baseado nas transações
+    console.log('Calculando saldos...')
+    const accountsWithBalance = await Promise.all(
+      accountsData.map(async (account) => {
+        try {
+          console.log(`Calculando saldo para conta: ${account.name}`)
+          const calculatedBalance = await calculateAccountBalance(account.id)
+          console.log(`Saldo calculado para ${account.name}: ${calculatedBalance}`)
+          return { ...account, balance: calculatedBalance }
+        } catch (error) {
+          console.error(`Erro ao calcular saldo da conta ${account.name}:`, error)
+          return account // Retorna a conta com o saldo original em caso de erro
+        }
+      })
+    )
+    
+    console.log('Contas com saldo calculado:', accountsWithBalance)
+    accounts.value = accountsWithBalance
   } catch (error) {
     console.error('Erro ao carregar contas:', error)
     accounts.value = []
   } finally {
     isLoading.value = false
+    console.log('Carregamento finalizado. Total de contas:', accounts.value.length)
+  }
+}
+
+async function calculateAccountBalance(accountId: string): Promise<number> {
+  try {
+    console.log(`Buscando transações para conta: ${accountId}`)
+    
+    // Timeout de 5 segundos para evitar travamento
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout ao buscar transações')), 5000)
+    )
+    
+    const response = await Promise.race([
+      transactionService.getAll({ accountId, limit: 1000 }),
+      timeoutPromise
+    ])
+    
+    console.log(`Resposta recebida para conta ${accountId}:`, response)
+    const transactions = Array.isArray(response?.data) ? response.data : []
+    
+    if (!transactions.length) {
+      console.log(`Nenhuma transação encontrada para conta ${accountId}`)
+      return 0
+    }
+    
+    // Ordenar por data e calcular saldo
+    const sorted = transactions.sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime()
+    })
+    
+    let balance = 0
+    sorted.forEach(transaction => {
+      if (transaction.fromAccountId === accountId) {
+        balance -= Number(transaction.amount)
+      } else if (transaction.toAccountId === accountId) {
+        balance += Number(transaction.amount)
+      }
+    })
+    
+    console.log(`Saldo final calculado para conta ${accountId}: ${balance}`)
+    return balance
+  } catch (error) {
+    console.error('Erro ao calcular saldo da conta:', accountId, error)
+    return 0
   }
 }
 
@@ -39,6 +122,7 @@ function openCreateModal() {
     name: '',
     type: AccountType.CHECKING,
     balance: 0,
+    initialBalance: 0,
     description: ''
   }
   showModal.value = true
@@ -50,6 +134,7 @@ function openEditModal(account: Account) {
     name: account.name,
     type: account.type,
     balance: account.balance,
+    initialBalance: account.initialBalance || 0,
     description: account.description || ''
   }
   showModal.value = true
@@ -115,6 +200,10 @@ function getAccountTypeIcon(type: AccountType): string {
   }
   return icons[type]
 }
+
+function viewAccountDetails(accountId: string) {
+  router.push(`/accounts/${accountId}`)
+}
 </script>
 
 <template>
@@ -143,7 +232,8 @@ function getAccountTypeIcon(type: AccountType): string {
       <div
         v-for="account in accounts"
         :key="account.id"
-        class="card hover:shadow-lg transition-shadow"
+        class="card hover:shadow-lg transition-shadow cursor-pointer"
+        @click="viewAccountDetails(account.id)"
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center space-x-3">
@@ -155,7 +245,7 @@ function getAccountTypeIcon(type: AccountType): string {
               <p class="text-sm text-gray-500">{{ getAccountTypeLabel(account.type) }}</p>
             </div>
           </div>
-          <div class="flex space-x-2">
+          <div class="flex space-x-2" @click.stop>
             <button
               @click="openEditModal(account)"
               class="p-1 text-gray-400 hover:text-primary-500 transition-colors"
@@ -178,6 +268,10 @@ function getAccountTypeIcon(type: AccountType): string {
         <p v-if="account.description" class="text-sm text-gray-600">
           {{ account.description }}
         </p>
+
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <p class="text-xs text-gray-500">Clique para ver movimentações</p>
+        </div>
       </div>
     </div>
 
@@ -223,21 +317,6 @@ function getAccountTypeIcon(type: AccountType): string {
               <option value="INVESTMENT">Investimento</option>
               <option value="CASH">Dinheiro</option>
             </select>
-          </div>
-
-          <div>
-            <label for="balance" class="block text-sm font-medium text-gray-700 mb-1">
-              Saldo inicial
-            </label>
-            <input
-              id="balance"
-              v-model.number="form.balance"
-              type="number"
-              step="0.01"
-              required
-              class="input"
-              placeholder="0,00"
-            />
           </div>
 
           <div>

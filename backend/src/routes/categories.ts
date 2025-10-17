@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import categoriesController from '@/controllers/categories.controller';
 import { authenticate } from '@/middleware/auth.middleware';
+import { validate, createCategorySchema, updateCategorySchema } from '@/middleware/validation.middleware';
 
 const router = Router();
 
@@ -14,10 +15,10 @@ router.get('/', categoriesController.getAll.bind(categoriesController));
 router.get('/:id', categoriesController.getById.bind(categoriesController));
 
 // POST /api/categories - Cria nova categoria
-router.post('/', categoriesController.create.bind(categoriesController));
+router.post('/', validate(createCategorySchema), categoriesController.create.bind(categoriesController));
 
 // PUT /api/categories/:id - Atualiza categoria
-router.put('/:id', categoriesController.update.bind(categoriesController));
+router.put('/:id', validate(updateCategorySchema), categoriesController.update.bind(categoriesController));
 
 // DELETE /api/categories/:id - Exclui categoria
 router.delete('/:id', categoriesController.delete.bind(categoriesController));

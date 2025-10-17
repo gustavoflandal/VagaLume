@@ -1,8 +1,7 @@
-import { PrismaClient, TransactionType, TransactionStatus } from '@prisma/client';
+import { TransactionType, TransactionStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
-
-const prisma = new PrismaClient();
 
 export interface CreateTransactionDTO {
   description: string;
@@ -158,11 +157,14 @@ class TransactionService {
 
     const transaction = await prisma.transaction.create({
       data: {
-        ...data,
+        description: data.description,
         amount: new Decimal(data.amount),
+        type: data.type,
+        date: data.date instanceof Date ? data.date : new Date(data.date),
+        ...(data.fromAccountId && { fromAccountId: data.fromAccountId }),
+        ...(data.toAccountId && { toAccountId: data.toAccountId }),
+        ...(data.categoryId && { categoryId: data.categoryId }),
         status: data.status || 'COMPLETED',
-        tags: data.tags ? JSON.stringify(data.tags) : null,
-        attachments: data.attachments ? JSON.stringify(data.attachments) : null,
         userId,
       },
       include: {
@@ -209,14 +211,11 @@ class TransactionService {
     if (data.description !== undefined) updateData.description = data.description;
     if (data.amount !== undefined) updateData.amount = new Decimal(data.amount);
     if (data.type !== undefined) updateData.type = data.type;
-    if (data.date !== undefined) updateData.date = data.date;
+    if (data.date !== undefined) updateData.date = data.date instanceof Date ? data.date : new Date(data.date);
     if (data.status !== undefined) updateData.status = data.status;
     if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
     if (data.fromAccountId !== undefined) updateData.fromAccountId = data.fromAccountId;
     if (data.toAccountId !== undefined) updateData.toAccountId = data.toAccountId;
-    if (data.notes !== undefined) updateData.notes = data.notes;
-    if (data.tags !== undefined) updateData.tags = JSON.stringify(data.tags);
-    if (data.attachments !== undefined) updateData.attachments = JSON.stringify(data.attachments);
 
     const transaction = await prisma.transaction.update({
       where: { id: transactionId },

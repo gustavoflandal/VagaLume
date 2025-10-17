@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import accountsController from '@/controllers/accounts.controller';
 import { authenticate } from '@/middleware/auth.middleware';
+import { validate, createAccountSchema, updateAccountSchema } from '@/middleware/validation.middleware';
 
 const router = Router();
 
@@ -17,10 +18,10 @@ router.get('/summary', accountsController.getSummary.bind(accountsController));
 router.get('/:id', accountsController.getById.bind(accountsController));
 
 // POST /api/accounts - Cria nova conta
-router.post('/', accountsController.create.bind(accountsController));
+router.post('/', validate(createAccountSchema), accountsController.create.bind(accountsController));
 
 // PUT /api/accounts/:id - Atualiza conta
-router.put('/:id', accountsController.update.bind(accountsController));
+router.put('/:id', validate(updateAccountSchema), accountsController.update.bind(accountsController));
 
 // DELETE /api/accounts/:id - Exclui conta
 router.delete('/:id', accountsController.delete.bind(accountsController));

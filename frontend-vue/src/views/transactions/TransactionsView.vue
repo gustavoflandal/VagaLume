@@ -5,6 +5,9 @@ import { accountService } from '@/services/account.service'
 import { categoryService } from '@/services/category.service'
 import { TransactionType, TransactionStatus, type Transaction, type Account, type Category } from '@/types'
 import { XMarkIcon, PencilIcon, TrashIcon, PlusIcon, FunnelIcon } from '@heroicons/vue/24/outline'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const transactions = ref<Transaction[]>([])
 const accounts = ref<Account[]>([])
@@ -71,11 +74,15 @@ async function loadTransactions() {
     if (filters.value.endDate) params.endDate = filters.value.endDate
 
     const response = await transactionService.getAll(params)
-    transactions.value = Array.isArray(response?.data) 
+    const allTransactions = Array.isArray(response?.data) 
       ? response.data 
       : Array.isArray(response) 
         ? response 
         : []
+    
+    // Filtrar para remover transferências (elas são gerenciadas nas contas)
+    transactions.value = allTransactions.filter(t => t.type !== TransactionType.TRANSFER)
+    
     pagination.value = response?.pagination || {
       page: 1,
       limit: 10,
@@ -147,25 +154,67 @@ function closeModal() {
 
 async function handleSubmit() {
   try {
-    const data = { ...form.value }
+    // Validações básicas
+    if (!form.value.description.trim()) {
+      toast.error('Descrição é obrigatória')
+      return
+    }
+    
+    if (!form.value.amount || form.value.amount <= 0) {
+      toast.error('Valor deve ser maior que zero')
+      return
+    }
+    
+    if (form.value.type === TransactionType.TRANSFER) {
+      if (!form.value.fromAccountId || !form.value.toAccountId) {
+        toast.error('Transferências requerem conta de origem e destino')
+        return
+      }
+      if (form.value.fromAccountId === form.value.toAccountId) {
+        toast.error('Contas de origem e destino devem ser diferentes')
+        return
+      }
+    } else if (form.value.type === TransactionType.EXPENSE && !form.value.fromAccountId) {
+      toast.error('Despesas requerem conta de origem')
+      return
+    } else if (form.value.type === TransactionType.INCOME && !form.value.fromAccountId) {
+      toast.error('Receitas requerem conta de destino')
+      return
+    }
+    
+    const data: any = { ...form.value }
     
     // Limpar campos não usados baseado no tipo
     if (data.type === TransactionType.INCOME) {
+      // Receita: apenas toAccountId (conta de destino)
       data.toAccountId = data.fromAccountId
-      data.fromAccountId = ''
+      delete data.fromAccountId
     } else if (data.type === TransactionType.EXPENSE) {
-      data.toAccountId = ''
+      // Despesa: apenas fromAccountId (conta de origem)
+      delete data.toAccountId
     }
+    // Transfer: mantém ambos fromAccountId e toAccountId
+    
+    // Remover campos vazios ou undefined
+    Object.keys(data).forEach(key => {
+      if (data[key] === '' || data[key] === undefined || data[key] === null) {
+        delete data[key]
+      }
+    })
     
     if (editingTransaction.value) {
       await transactionService.update(editingTransaction.value.id, data)
+      toast.success('Transação atualizada com sucesso')
     } else {
       await transactionService.create(data)
+      toast.success('Transação criada com sucesso')
     }
     await loadTransactions()
     closeModal()
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao salvar transação:', error)
+    const message = error.response?.data?.message || error.response?.data?.errors?.[0]?.message || 'Erro ao salvar transação'
+    toast.error(message)
   }
 }
 
@@ -174,9 +223,12 @@ async function handleDelete(id: string) {
 
   try {
     await transactionService.delete(id)
+    toast.success('Transação excluída com sucesso')
     await loadTransactions()
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao excluir transação:', error)
+    const message = error.response?.data?.message || 'Erro ao excluir transação'
+    toast.error(message)
   }
 }
 
@@ -242,6 +294,34 @@ function getStatusLabel(status: TransactionStatus): string {
   }
   return labels[status]
 }
+
+// Calcular saldo acumulado para cada transação (ordenado por data crescente)
+const transactionsWithBalance = computed(() => {
+  if (!transactions.value.length) return []
+  
+  // Ordenar transações por data (mais antiga primeiro)
+  const sorted = [...transactions.value].sort((a, b) => {
+    return new Date(a.date).getTime() - new Date(b.date).getTime()
+  })
+  
+  // Calcular saldo acumulado
+  let balance = 0
+  const result = sorted.map(transaction => {
+    if (transaction.type === TransactionType.INCOME) {
+      balance += Number(transaction.amount)
+    } else if (transaction.type === TransactionType.EXPENSE) {
+      balance -= Number(transaction.amount)
+    }
+    // Para transferências, não altera o saldo total (apenas move entre contas)
+    
+    return {
+      ...transaction,
+      runningBalance: balance
+    }
+  })
+  
+  return result
+})
 </script>
 
 <template>
@@ -351,12 +431,15 @@ function getStatusLabel(status: TransactionStatus): string {
                   Status
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Saldo
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="transaction in transactions" :key="transaction.id" class="hover:bg-gray-50">
+              <tr v-for="transaction in transactionsWithBalance" :key="transaction.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {{ formatDate(transaction.date) }}
                 </td>
@@ -399,6 +482,16 @@ function getStatusLabel(status: TransactionStatus): string {
                     class="px-2 py-1 rounded-full text-xs font-medium"
                   >
                     {{ getStatusLabel(transaction.status) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
+                  <span
+                    :class="{
+                      'text-green-600': transaction.runningBalance >= 0,
+                      'text-red-600': transaction.runningBalance < 0
+                    }"
+                  >
+                    {{ formatCurrency(transaction.runningBalance) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -471,8 +564,10 @@ function getStatusLabel(status: TransactionStatus): string {
             <select id="type" v-model="form.type" required class="input">
               <option :value="TransactionType.INCOME">Receita</option>
               <option :value="TransactionType.EXPENSE">Despesa</option>
-              <option :value="TransactionType.TRANSFER">Transferência</option>
             </select>
+            <p class="text-xs text-gray-500 mt-1">
+              Para transferências entre contas, acesse a conta de origem
+            </p>
           </div>
 
           <div>

@@ -15,10 +15,11 @@ export const transactionService = {
     endDate?: string
   }): Promise<PaginatedResponse<Transaction>> {
     try {
-      const response = await api.get<ApiResponse<PaginatedResponse<Transaction>>>('/transactions', {
+      const response = await api.get<any>('/transactions', {
         params,
       })
-      const result = response.data.data
+      // Backend retorna: { success: true, data: [...], pagination: {...} }
+      const result = response.data
       return {
         data: Array.isArray(result?.data) ? result.data : [],
         pagination: result?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }

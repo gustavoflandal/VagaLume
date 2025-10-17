@@ -1,13 +1,13 @@
-import { PrismaClient, AccountType } from '@prisma/client';
+import { AccountType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
-
-const prisma = new PrismaClient();
 
 export interface CreateAccountDTO {
   name: string;
   type: AccountType;
   balance?: number;
+  initialBalance?: number;
   color?: string;
   icon?: string;
   description?: string;
@@ -54,10 +54,13 @@ class AccountService {
    * Cria nova conta
    */
   async create(userId: string, data: CreateAccountDTO) {
+    const balanceValue = data.balance ? new Decimal(data.balance) : new Decimal(0);
+    
     const account = await prisma.account.create({
       data: {
         ...data,
-        balance: data.balance ? new Decimal(data.balance) : new Decimal(0),
+        balance: balanceValue,
+        initialBalance: data.initialBalance ? new Decimal(data.initialBalance) : balanceValue,
         userId,
       },
     });

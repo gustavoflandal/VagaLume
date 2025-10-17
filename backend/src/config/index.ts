@@ -86,14 +86,14 @@ const config: Config = {
   },
   
   rateLimit: {
-    windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10), // 15 minutos
-    maxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100', 10),
+    windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '60000', 10), // 1 minuto em dev
+    maxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '1000', 10), // 1000 requisições em dev
   },
   
   cors: {
-    origin: process.env['CORS_ORIGIN'] || 'http://localhost:3000',
+    origin: process.env['CORS_ORIGIN'] || 'http://localhost:5173',
     methods: process.env['CORS_METHODS'] || 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: process.env['CORS_CREDENTIALS'] === 'true',
+    credentials: process.env['CORS_CREDENTIALS'] === 'true' || true,
   },
   
   security: {
@@ -122,7 +122,14 @@ const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    throw new Error(`Variável de ambiente obrigatória não encontrada: ${envVar}`);
+    if (config.nodeEnv === 'development' || config.nodeEnv === 'test') {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[config] Variável ${envVar} não definida. Usando valor padrão para ambiente ${config.nodeEnv}.`
+      );
+    } else {
+      throw new Error(`Variável de ambiente obrigatória não encontrada: ${envVar}`);
+    }
   }
 }
 

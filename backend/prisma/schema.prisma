@@ -34,6 +34,16 @@ model User {
   transactions  Transaction[]
   categories    Category[]
   refreshTokens RefreshToken[]
+  piggyBanks    PiggyBank[]
+  bills         Bill[]
+  budgets       Budget[]
+  ruleGroups    RuleGroup[]
+  rules         Rule[]
+  recurrences   Recurrence[]
+  tags          Tag[]
+  attachments   Attachment[]
+  objectGroups  ObjectGroup[]
+  webhooks      Webhook[]
 
   @@map("users")
 }
@@ -71,6 +81,7 @@ model Account {
   name            String
   type            AccountType
   balance         Decimal     @default(0.00) @db.Decimal(15, 2)
+  initialBalance  Decimal     @default(0.00) @db.Decimal(15, 2) @map("initial_balance") // Saldo inicial da conta
   currency        String      @default("BRL")
   color           String?     // Cor para identificação visual
   icon            String?     // Ícone para identificação visual
@@ -87,6 +98,7 @@ model Account {
   user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactionsFrom    Transaction[] @relation("TransactionFromAccount")
   transactionsTo      Transaction[] @relation("TransactionToAccount")
+  piggyBanks          PiggyBank[]
 
   @@map("accounts")
 }
@@ -127,6 +139,8 @@ model Category {
   parent       Category?     @relation("CategorySubcategories", fields: [parentId], references: [id])
   subcategories Category[]   @relation("CategorySubcategories")
   transactions Transaction[]
+  notes        Note[]
+  attachments  Attachment[]
 
   @@map("categories")
 }
@@ -138,38 +152,654 @@ model Transaction {
   status      TransactionStatus @default(COMPLETED)
   amount      Decimal           @db.Decimal(15, 2)
   description String
-  notes       String?           @db.Text
   date        DateTime
-  dueDate     DateTime?         @map("due_date") // Para transações recorrentes
-  tags        String?           // Tags separadas por vírgula
+  dueDate     DateTime?         @map("due_date")
   
   // Contas envolvidas
   fromAccountId String? @map("from_account_id")
   toAccountId   String? @map("to_account_id")
   
-  // Categoria e usuário
+  // Categoria, bill e usuário
   categoryId String? @map("category_id")
+  billId     String? @map("bill_id")
   userId     String  @map("user_id")
   
   // Transação recorrente
-  isRecurring     Boolean @default(false) @map("is_recurring")
-  recurringRule   String? @map("recurring_rule") // JSON com regras de recorrência
-  parentId        String? @map("parent_id") // Para transações filhas de uma recorrente
+  recurrenceId String? @map("recurrence_id")
   
-  // Anexos
-  attachments String? // JSON com URLs dos anexos
+  // Informações adicionais
+  foreignAmount    Decimal? @db.Decimal(15, 2) @map("foreign_amount")
+  foreignCurrency  String?  @map("foreign_currency")
+  externalId       String?  @map("external_id")
+  externalUrl      String?  @map("external_url")
+  internalReference String? @map("internal_reference")
+  
+  // Datas específicas
+  interestDate DateTime? @map("interest_date")
+  bookDate     DateTime? @map("book_date")
+  processDate  DateTime? @map("process_date")
   
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relacionamentos
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  fromAccount Account?    @relation("TransactionFromAccount", fields: [fromAccountId], references: [id])
-  toAccount   Account?    @relation("TransactionToAccount", fields: [toAccountId], references: [id])
-  parent      Transaction? @relation("TransactionRecurring", fields: [parentId], references: [id])
-  children    Transaction[] @relation("TransactionRecurring")
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category?           @relation(fields: [categoryId], references: [id])
+  bill        Bill?               @relation(fields: [billId], references: [id])
+  recurrence  Recurrence?         @relation(fields: [recurrenceId], references: [id])
+  fromAccount Account?            @relation("TransactionFromAccount", fields: [fromAccountId], references: [id])
+  toAccount   Account?            @relation("TransactionToAccount", fields: [toAccountId], references: [id])
+  tags        TransactionTag[]
+  attachments Attachment[]
+  notes       Note[]
+  locations   Location[]
+  piggyBankEvents PiggyBankEvent[]
+  linksFrom   TransactionLink[]   @relation("TransactionLinkFrom")
+  linksTo     TransactionLink[]   @relation("TransactionLinkTo")
 
   @@map("transactions")
+}
+
+// ============================================
+// PIGGY BANKS (Cofrinhos/Metas de Economia)
+// ============================================
+
+model PiggyBank {
+  id            String   @id @default(cuid())
+  name          String
+  targetAmount  Decimal  @db.Decimal(15, 2) @map("target_amount")
+  currentAmount Decimal  @default(0.00) @db.Decimal(15, 2) @map("current_amount")
+  startDate     DateTime? @map("start_date")
+  targetDate    DateTime? @map("target_date")
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+  userId        String   @map("user_id")
+  accountId     String?  @map("account_id")
+  objectGroupId String?  @map("object_group_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account?         @relation(fields: [accountId], references: [id])
+  objectGroup ObjectGroup?     @relation(fields: [objectGroupId], references: [id])
+  events      PiggyBankEvent[]
+  notes       Note[]
+  attachments Attachment[]
+
+  @@map("piggy_banks")
+}
+
+model PiggyBankEvent {
+  id             String      @id @default(cuid())
+  piggyBankId    String      @map("piggy_bank_id")
+  transactionId  String?     @map("transaction_id")
+  amount         Decimal     @db.Decimal(15, 2)
+  date           DateTime
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  // Relacionamentos
+  piggyBank   PiggyBank    @relation(fields: [piggyBankId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@map("piggy_bank_events")
+}
+
+// ============================================
+// BILLS (Assinaturas/Contas Recorrentes)
+// ============================================
+
+model Bill {
+  id               String    @id @default(cuid())
+  name             String
+  amountMin        Decimal   @db.Decimal(15, 2) @map("amount_min")
+  amountMax        Decimal   @db.Decimal(15, 2) @map("amount_max")
+  date             DateTime  // Data esperada de pagamento
+  endDate          DateTime? @map("end_date")
+  extensionDate    DateTime? @map("extension_date")
+  repeatFreq       String    @map("repeat_freq") // monthly, weekly, quarterly, etc
+  skip             Int       @default(0)
+  active           Boolean   @default(true)
+  autoMatch        Boolean   @default(true) @map("auto_match")
+  userId           String    @map("user_id")
+  objectGroupId    String?   @map("object_group_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objectGroup  ObjectGroup?  @relation(fields: [objectGroupId], references: [id])
+  transactions Transaction[]
+  notes        Note[]
+  attachments  Attachment[]
+  rules        Rule[]
+
+  @@map("bills")
+}
+
+// ============================================
+// BUDGETS (Orçamentos Avançados)
+// ============================================
+
+model Budget {
+  id            String   @id @default(cuid())
+  name          String
+  active        Boolean  @default(true)
+  order         Int      @default(0)
+  userId        String   @map("user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  limits      BudgetLimit[]
+  autoBudget  AutoBudget?
+  notes       Note[]
+  attachments Attachment[]
+
+  @@map("budgets")
+}
+
+model BudgetLimit {
+  id         String   @id @default(cuid())
+  budgetId   String   @map("budget_id")
+  amount     Decimal  @db.Decimal(15, 2)
+  startDate  DateTime @map("start_date")
+  endDate    DateTime @map("end_date")
+  currency   String   @default("BRL")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@map("budget_limits")
+}
+
+enum AutoBudgetType {
+  RESET     // Reseta no início do período
+  ROLLOVER  // Transfere o saldo não utilizado
+  ADJUSTED  // Ajusta baseado no gasto anterior
+
+  @@map("auto_budget_type")
+}
+
+enum AutoBudgetPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  HALF_YEAR
+  YEARLY
+
+  @@map("auto_budget_period")
+}
+
+model AutoBudget {
+  id         String           @id @default(cuid())
+  budgetId   String           @unique @map("budget_id")
+  type       AutoBudgetType
+  amount     Decimal          @db.Decimal(15, 2)
+  period     AutoBudgetPeriod
+  currency   String           @default("BRL")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@map("auto_budgets")
+}
+
+// ============================================
+// RULES (Regras/Automação)
+// ============================================
+
+model RuleGroup {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rules Rule[]
+
+  @@map("rule_groups")
+}
+
+model Rule {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  order        Int      @default(0)
+  active       Boolean  @default(true)
+  strict       Boolean  @default(true) // True = AND, False = OR
+  stopProcessing Boolean @default(false) @map("stop_processing")
+  ruleGroupId  String   @map("rule_group_id")
+  userId       String   @map("user_id")
+  billId       String?  @map("bill_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleGroup  RuleGroup    @relation(fields: [ruleGroupId], references: [id], onDelete: Cascade)
+  bill       Bill?        @relation(fields: [billId], references: [id])
+  triggers   RuleTrigger[]
+  actions    RuleAction[]
+
+  @@map("rules")
+}
+
+model RuleTrigger {
+  id           String   @id @default(cuid())
+  ruleId       String   @map("rule_id")
+  triggerType  String   @map("trigger_type") // description_is, amount_more, category_is, etc
+  triggerValue String   @map("trigger_value")
+  order        Int      @default(0)
+  active       Boolean  @default(true)
+  stopProcessing Boolean @default(false) @map("stop_processing")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  rule Rule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@map("rule_triggers")
+}
+
+model RuleAction {
+  id           String   @id @default(cuid())
+  ruleId       String   @map("rule_id")
+  actionType   String   @map("action_type") // set_category, set_budget, add_tag, etc
+  actionValue  String   @map("action_value")
+  order        Int      @default(0)
+  active       Boolean  @default(true)
+  stopProcessing Boolean @default(false) @map("stop_processing")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  rule Rule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@map("rule_actions")
+}
+
+// ============================================
+// RECURRENCES (Transações Recorrentes)
+// ============================================
+
+enum RecurrenceRepetitionType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  HALF_YEAR
+  YEARLY
+  CUSTOM
+
+  @@map("recurrence_repetition_type")
+}
+
+model Recurrence {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  firstDate       DateTime  @map("first_date")
+  repeatUntil     DateTime? @map("repeat_until")
+  latestDate      DateTime? @map("latest_date")
+  repetitions     Int?      // Número de repetições
+  active          Boolean   @default(true)
+  applyRules      Boolean   @default(true) @map("apply_rules")
+  userId          String    @map("user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user         User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repetitions_config RecurrenceRepetition[]
+  transactions Transaction[]
+  recurrenceTransactions RecurrenceTransaction[]
+  notes        Note[]
+  attachments  Attachment[]
+
+  @@map("recurrences")
+}
+
+model RecurrenceRepetition {
+  id           String                   @id @default(cuid())
+  recurrenceId String                   @map("recurrence_id")
+  type         RecurrenceRepetitionType
+  moment       String                   // "1" for first day, "2" for second, etc
+  skip         Int                      @default(0)
+  weekend      Int                      @default(1) // 1=skip, 2=create_before, 3=create_after, 4=create_on
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  recurrence Recurrence @relation(fields: [recurrenceId], references: [id], onDelete: Cascade)
+
+  @@map("recurrence_repetitions")
+}
+
+model RecurrenceTransaction {
+  id              String   @id @default(cuid())
+  recurrenceId    String   @map("recurrence_id")
+  description     String
+  amount          Decimal  @db.Decimal(15, 2)
+  foreignAmount   Decimal? @db.Decimal(15, 2) @map("foreign_amount")
+  foreignCurrency String?  @map("foreign_currency")
+  fromAccountId   String   @map("from_account_id")
+  toAccountId     String   @map("to_account_id")
+  categoryId      String?  @map("category_id")
+  budgetId        String?  @map("budget_id")
+  billId          String?  @map("bill_id")
+  piggyBankId     String?  @map("piggy_bank_id")
+  type            TransactionType
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  recurrence  Recurrence @relation(fields: [recurrenceId], references: [id], onDelete: Cascade)
+  meta        RecurrenceTransactionMeta[]
+
+  @@map("recurrence_transactions")
+}
+
+model RecurrenceTransactionMeta {
+  id                      String               @id @default(cuid())
+  recurrenceTransactionId String               @map("recurrence_transaction_id")
+  name                    String
+  value                   String               @db.Text
+  createdAt               DateTime             @default(now()) @map("created_at")
+  updatedAt               DateTime             @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  recurrenceTransaction RecurrenceTransaction @relation(fields: [recurrenceTransactionId], references: [id], onDelete: Cascade)
+
+  @@map("recurrence_transaction_meta")
+}
+
+// ============================================
+// TAGS
+// ============================================
+
+model Tag {
+  id          String   @id @default(cuid())
+  tag         String
+  date        DateTime?
+  description String?  @db.Text
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions TransactionTag[]
+  locations    Location[]
+  attachments  Attachment[]
+
+  @@unique([userId, tag])
+  @@map("tags")
+}
+
+model TransactionTag {
+  id            String   @id @default(cuid())
+  transactionId String   @map("transaction_id")
+  tagId         String   @map("tag_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relacionamentos
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  tag         Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([transactionId, tagId])
+  @@map("transaction_tags")
+}
+
+// ============================================
+// ATTACHMENTS
+// ============================================
+
+enum AttachableType {
+  TRANSACTION
+  PIGGY_BANK
+  BILL
+  BUDGET
+  CATEGORY
+  TAG
+  RECURRENCE
+
+  @@map("attachable_type")
+}
+
+model Attachment {
+  id             String         @id @default(cuid())
+  filename       String
+  title          String?
+  description    String?        @db.Text
+  mime           String
+  size           Int
+  uploaded       Boolean        @default(false)
+  attachableType AttachableType @map("attachable_type")
+  attachableId   String         @map("attachable_id")
+  userId         String         @map("user_id")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  // Relacionamentos polimórficos (simulados)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_transaction_fk")
+  piggyBank   PiggyBank?   @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_piggybank_fk")
+  bill        Bill?        @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_bill_fk")
+  budget      Budget?      @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_budget_fk")
+  category    Category?    @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_category_fk")
+  tag         Tag?         @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_tag_fk")
+  recurrence  Recurrence?  @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_recurrence_fk")
+
+  @@map("attachments")
+}
+
+// ============================================
+// NOTES
+// ============================================
+
+enum NoteableType {
+  TRANSACTION
+  PIGGY_BANK
+  BILL
+  BUDGET
+  CATEGORY
+  RECURRENCE
+
+  @@map("noteable_type")
+}
+
+model Note {
+  id           String       @id @default(cuid())
+  text         String       @db.Text
+  noteableType NoteableType @map("noteable_type")
+  noteableId   String       @map("noteable_id")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relacionamentos polimórficos (simulados)
+  transaction Transaction? @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_transaction_fk")
+  piggyBank   PiggyBank?   @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_piggybank_fk")
+  bill        Bill?        @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_bill_fk")
+  budget      Budget?      @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_budget_fk")
+  category    Category?    @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_category_fk")
+  recurrence  Recurrence?  @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_recurrence_fk")
+
+  @@map("notes")
+}
+
+// ============================================
+// LOCATIONS (Geolocalização)
+// ============================================
+
+enum LocatableType {
+  TRANSACTION
+  TAG
+
+  @@map("locatable_type")
+}
+
+model Location {
+  id            String        @id @default(cuid())
+  latitude      Decimal       @db.Decimal(10, 7)
+  longitude     Decimal       @db.Decimal(10, 7)
+  zoomLevel     Int           @default(10) @map("zoom_level")
+  locatableType LocatableType @map("locatable_type")
+  locatableId   String        @map("locatable_id")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relacionamentos polimórficos (simulados)
+  transaction Transaction? @relation(fields: [locatableId], references: [id], onDelete: Cascade, map: "location_transaction_fk")
+  tag         Tag?         @relation(fields: [locatableId], references: [id], onDelete: Cascade, map: "location_tag_fk")
+
+  @@map("locations")
+}
+
+// ============================================
+// OBJECT GROUPS (Agrupamento de objetos)
+// ============================================
+
+model ObjectGroup {
+  id         String   @id @default(cuid())
+  title      String
+  order      Int      @default(0)
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  piggyBanks PiggyBank[]
+  bills      Bill[]
+
+  @@map("object_groups")
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+
+enum WebhookTrigger {
+  STORE_TRANSACTION
+  UPDATE_TRANSACTION
+  DESTROY_TRANSACTION
+  STORE_BUDGET
+  UPDATE_BUDGET
+  DESTROY_BUDGET
+  STORE_UPDATE_BUDGET_LIMIT
+
+  @@map("webhook_trigger")
+}
+
+enum WebhookResponse {
+  TRANSACTIONS
+  ACCOUNTS
+  BUDGET
+  NONE
+
+  @@map("webhook_response")
+}
+
+enum WebhookDelivery {
+  JSON
+
+  @@map("webhook_delivery")
+}
+
+model Webhook {
+  id        String          @id @default(cuid())
+  title     String
+  url       String
+  trigger   WebhookTrigger
+  response  WebhookResponse
+  delivery  WebhookDelivery
+  active    Boolean         @default(true)
+  userId    String          @map("user_id")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages WebhookMessage[]
+
+  @@map("webhooks")
+}
+
+model WebhookMessage {
+  id        String             @id @default(cuid())
+  webhookId String             @map("webhook_id")
+  sent      Boolean            @default(false)
+  message   String             @db.Text // JSON com payload
+  uuid      String             @unique
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  webhook  Webhook           @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  attempts WebhookAttempt[]
+
+  @@map("webhook_messages")
+}
+
+model WebhookAttempt {
+  id               String         @id @default(cuid())
+  webhookMessageId String         @map("webhook_message_id")
+  statusCode       Int?           @map("status_code")
+  response         String?        @db.Text
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  // Relacionamentos
+  webhookMessage WebhookMessage @relation(fields: [webhookMessageId], references: [id], onDelete: Cascade)
+
+  @@map("webhook_attempts")
+}
+
+// ============================================
+// TRANSACTION LINKS (Links entre transações)
+// ============================================
+
+model LinkType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  inward    String   // Nome da relação de entrada (ex: "paga")
+  outward   String   // Nome da relação de saída (ex: "pago por")
+  editable  Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  links TransactionLink[]
+
+  @@map("link_types")
+}
+
+model TransactionLink {
+  id                String   @id @default(cuid())
+  linkTypeId        String   @map("link_type_id")
+  fromTransactionId String   @map("from_transaction_id")
+  toTransactionId   String   @map("to_transaction_id")
+  notes             String?  @db.Text
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  linkType        LinkType    @relation(fields: [linkTypeId], references: [id], onDelete: Cascade)
+  fromTransaction Transaction @relation("TransactionLinkFrom", fields: [fromTransactionId], references: [id], onDelete: Cascade)
+  toTransaction   Transaction @relation("TransactionLinkTo", fields: [toTransactionId], references: [id], onDelete: Cascade)
+
+  @@unique([fromTransactionId, toTransactionId, linkTypeId])
+  @@map("transaction_links")
 }
