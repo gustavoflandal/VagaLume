@@ -113,32 +113,6 @@ export const useObjectGroupStore = defineStore('objectGroup', () => {
     }
   }
 
-  async function linkPiggyBank(groupId: string, piggyBankId: string) {
-    try {
-      isLoading.value = true
-      error.value = null
-      await objectGroupService.linkPiggyBank(groupId, piggyBankId)
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erro ao vincular cofrinho ao grupo'
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function unlinkPiggyBank(groupId: string, piggyBankId: string) {
-    try {
-      isLoading.value = true
-      error.value = null
-      await objectGroupService.unlinkPiggyBank(groupId, piggyBankId)
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erro ao desvincular cofrinho do grupo'
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
   async function linkBill(groupId: string, billId: string) {
     try {
       isLoading.value = true
@@ -185,8 +159,6 @@ export const useObjectGroupStore = defineStore('objectGroup', () => {
     update,
     remove,
     reorder,
-    linkPiggyBank,
-    unlinkPiggyBank,
     linkBill,
     unlinkBill,
     clearError,

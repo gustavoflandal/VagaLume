@@ -1,20 +1,14 @@
 <script setup lang="ts">
 import { useToast } from '@/composables/useToast'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from '@heroicons/vue/24/solid'
+import { X, CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-vue-next'
 
 const { toasts, remove } = useToast()
 
 const iconMap = {
-  success: CheckCircleIcon,
-  error: ExclamationCircleIcon,
-  warning: ExclamationTriangleIcon,
-  info: InformationCircleIcon,
+  success: CheckCircle,
+  error: XCircle,
+  warning: AlertTriangle,
+  info: Info,
 }
 
 const colorMap = {
@@ -52,7 +46,7 @@ const iconColorMap = {
           @click="remove(toast.id)"
           class="ml-3 flex-shrink-0 hover:opacity-70 transition-opacity"
         >
-          <XMarkIcon class="h-5 w-5" />
+          <X class="h-5 w-5" />
         </button>
       </div>
     </TransitionGroup>
@@ -75,3 +69,4 @@ const iconColorMap = {
   transform: translateX(100%);
 }
 </style>
+

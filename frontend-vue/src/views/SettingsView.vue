@@ -123,13 +123,6 @@ const tabs = [
               type="checkbox"
               class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
-            <span class="text-sm text-gray-700">Notificar quando uma meta de cofrinho for atingida</span>
-          </label>
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="checkbox"
-              class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-            />
             <span class="text-sm text-gray-700">Notificar sobre transações recorrentes geradas</span>
           </label>
         </div>

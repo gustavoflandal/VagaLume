@@ -44,7 +44,6 @@ export interface CreateRecurrenceDTO {
     categoryId?: string;
     budgetId?: string;
     billId?: string;
-    piggyBankId?: string;
     foreignAmount?: number;
     foreignCurrency?: string;
   };
@@ -135,9 +134,6 @@ class RecurrenceService {
               ? { categoryId: data.transactionData.categoryId }
               : {}),
             ...(data.transactionData.billId ? { billId: data.transactionData.billId } : {}),
-            ...(data.transactionData.piggyBankId
-              ? { piggyBankId: data.transactionData.piggyBankId }
-              : {}),
             ...(data.transactionData.budgetId
               ? { budgetId: data.transactionData.budgetId }
               : {}),

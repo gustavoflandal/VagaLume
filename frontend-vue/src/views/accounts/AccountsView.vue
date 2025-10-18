@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onActivated, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { accountService } from '@/services/account.service'
 import { transactionService } from '@/services/transaction.service'
 import { AccountType, type Account } from '@/types'
-import { XMarkIcon, PencilIcon, TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { X, Pencil, Trash2, Plus } from 'lucide-vue-next'
+import IconPicker from '@/components/IconPicker.vue'
+import LucideIcon from '@/components/LucideIcon.vue'
 
 const router = useRouter()
+const route = useRoute()
 
 const accounts = ref<Account[]>([])
 const isLoading = ref(true)
@@ -18,6 +21,7 @@ const form = ref({
   type: AccountType.CHECKING,
   balance: 0,
   initialBalance: 0,
+  icon: 'Wallet',
   description: ''
 })
 
@@ -30,6 +34,14 @@ onMounted(async () => {
 onActivated(async () => {
   console.log('AccountsView ativado')
   await loadAccounts()
+})
+
+// Recarregar quando a rota mudar (útil quando voltando de detalhes)
+watch(() => route.path, async (newPath) => {
+  if (newPath === '/accounts') {
+    console.log('Rota mudou para /accounts, recarregando...')
+    await loadAccounts()
+  }
 })
 
 async function loadAccounts() {
@@ -123,6 +135,7 @@ function openCreateModal() {
     type: AccountType.CHECKING,
     balance: 0,
     initialBalance: 0,
+    icon: 'Wallet',
     description: ''
   }
   showModal.value = true
@@ -135,6 +148,7 @@ function openEditModal(account: Account) {
     type: account.type,
     balance: account.balance,
     initialBalance: account.initialBalance || 0,
+    icon: account.icon || 'Wallet',
     description: account.description || ''
   }
   showModal.value = true
@@ -211,7 +225,7 @@ function viewAccountDetails(accountId: string) {
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-3xl font-bold text-gray-900">Contas</h1>
       <button @click="openCreateModal" class="btn-primary flex items-center space-x-2">
-        <PlusIcon class="h-5 w-5" />
+        <Plus class="h-5 w-5" />
         <span>Nova Conta</span>
       </button>
     </div>
@@ -223,7 +237,7 @@ function viewAccountDetails(accountId: string) {
     <div v-else-if="!accounts || accounts.length === 0" class="card text-center py-12">
       <p class="text-gray-500 mb-4">Nenhuma conta cadastrada</p>
       <button @click="openCreateModal" class="btn-primary inline-flex items-center space-x-2">
-        <PlusIcon class="h-5 w-5" />
+        <Plus class="h-5 w-5" />
         <span>Criar primeira conta</span>
       </button>
     </div>
@@ -237,8 +251,15 @@ function viewAccountDetails(accountId: string) {
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-2xl">
-              {{ getAccountTypeIcon(account.type) }}
+            <div 
+              class="w-12 h-12 rounded-full flex items-center justify-center"
+              :style="{ backgroundColor: account.color ? account.color + '20' : '#6366f120' }"
+            >
+              <LucideIcon 
+                :name="account.icon || 'Wallet'" 
+                :size="28" 
+                :class="account.color ? `text-[${account.color}]` : 'text-primary-500'" 
+              />
             </div>
             <div>
               <h3 class="font-bold text-gray-900">{{ account.name }}</h3>
@@ -250,13 +271,13 @@ function viewAccountDetails(accountId: string) {
               @click="openEditModal(account)"
               class="p-1 text-gray-400 hover:text-primary-500 transition-colors"
             >
-              <PencilIcon class="h-5 w-5" />
+              <Pencil class="h-5 w-5" />
             </button>
             <button
               @click="handleDelete(account.id)"
               class="p-1 text-gray-400 hover:text-red-500 transition-colors"
             >
-              <TrashIcon class="h-5 w-5" />
+              <Trash2 class="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -287,7 +308,7 @@ function viewAccountDetails(accountId: string) {
             {{ editingAccount ? 'Editar Conta' : 'Nova Conta' }}
           </h2>
           <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-            <XMarkIcon class="h-6 w-6" />
+            <X class="h-6 w-6" />
           </button>
         </div>
 
@@ -320,6 +341,13 @@ function viewAccountDetails(accountId: string) {
           </div>
 
           <div>
+            <label for="icon" class="block text-sm font-medium text-gray-700 mb-1">
+              Ícone
+            </label>
+            <IconPicker v-model="form.icon" />
+          </div>
+
+          <div>
             <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
               Descrição (opcional)
             </label>
@@ -348,3 +376,4 @@ function viewAccountDetails(accountId: string) {
 
 <style scoped>
 </style>
+

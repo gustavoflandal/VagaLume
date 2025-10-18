@@ -11,15 +11,21 @@ export async function createTestUser(data?: Partial<{
   email: string;
   password: string;
 }>) {
-  const hashedPassword = await bcrypt.hash(data?.password || 'Test123!', config.security.bcryptRounds);
+  const password = data?.password || 'Test@123';
+  const hashedPassword = await bcrypt.hash(password, 10);
   
-  return await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       name: data?.name || 'Test User',
       email: data?.email || `test-${Date.now()}@example.com`,
       password: hashedPassword,
     },
   });
+  
+  // Armazenar senha em texto plano no objeto para uso nos testes
+  (user as any).plainPassword = password;
+  
+  return user;
 }
 
 /**
@@ -172,6 +178,39 @@ export async function createTestPiggyBank(userId: string, data?: Partial<{
       accountId: data?.accountId,
     },
   });
+}
+
+/**
+ * Faz login e retorna o token de autenticação
+ */
+export async function getAuthToken(email: string, password: string): Promise<string> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new Error('User not found');
+  }
+  
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error('Invalid password');
+  }
+  
+  return generateTestToken(user.id);
+}
+
+/**
+ * Limpa todos os dados de teste de um usuário
+ */
+export async function cleanupTestData(userId: string): Promise<void> {
+  // Deletar em ordem para respeitar foreign keys
+  await prisma.billInstallment.deleteMany({ where: { bill: { userId } } });
+  await prisma.bill.deleteMany({ where: { userId } });
+  await prisma.budgetLimit.deleteMany({ where: { budget: { userId } } });
+  await prisma.budget.deleteMany({ where: { userId } });
+  await prisma.transaction.deleteMany({ where: { userId } });
+  await prisma.category.deleteMany({ where: { userId } });
+  await prisma.account.deleteMany({ where: { userId } });
+  await prisma.refreshToken.deleteMany({ where: { userId } });
+  await prisma.user.delete({ where: { id: userId } });
 }
 
 /**

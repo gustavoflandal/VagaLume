@@ -45,16 +45,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/categories/CategoriesView.vue'),
       },
       {
-        path: 'piggy-banks',
-        name: 'PiggyBanks',
-        component: () => import('@/views/piggyBanks/PiggyBanksView.vue'),
-      },
-      {
-        path: 'piggy-banks/new',
-        name: 'PiggyBankNew',
-        component: () => import('@/views/piggyBanks/PiggyBanksView.vue'), // Temporário
-      },
-      {
         path: 'bills',
         name: 'Bills',
         component: () => import('@/views/bills/BillsView.vue'),
@@ -62,7 +52,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'bills/new',
         name: 'BillNew',
-        component: () => import('@/views/bills/BillsView.vue'), // Temporário
+        component: () => import('@/views/bills/BillFormView.vue'),
+      },
+      {
+        path: 'bills/:id',
+        name: 'BillEdit',
+        component: () => import('@/views/bills/BillFormView.vue'),
       },
       {
         path: 'budgets',
@@ -122,11 +117,6 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'reports/budget-analysis',
         name: 'ReportBudgetAnalysis',
-        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
-      },
-      {
-        path: 'reports/piggy-banks',
-        name: 'ReportPiggyBanks',
         component: () => import('@/views/reports/ReportsView.vue'), // Temporário
       },
       {

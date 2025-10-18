@@ -49,14 +49,6 @@ export const objectGroupService = {
     await api.post('/object-groups/reorder', { groupIds })
   },
 
-  async linkPiggyBank(groupId: string, piggyBankId: string): Promise<void> {
-    await api.post(`/object-groups/${groupId}/piggy-banks`, { piggyBankId })
-  },
-
-  async unlinkPiggyBank(groupId: string, piggyBankId: string): Promise<void> {
-    await api.delete(`/object-groups/${groupId}/piggy-banks/${piggyBankId}`)
-  },
-
   async linkBill(groupId: string, billId: string): Promise<void> {
     await api.post(`/object-groups/${groupId}/bills`, { billId })
   },

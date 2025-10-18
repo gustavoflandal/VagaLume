@@ -128,6 +128,91 @@ class BillsController {
       res.status(400).json({ success: false, message });
     }
   }
+
+  /**
+   * GET /api/bills/:id/installments - Lista todas as parcelas de uma bill
+   */
+  async getInstallments(req: AuthRequest, res: Response) {
+    try {
+      const installments = await billService.getInstallments(req.params['id']!, req.user!.userId);
+      res.json({ success: true, data: installments });
+    } catch (error) {
+      logger.error('Erro ao listar parcelas:', error);
+      const message = error instanceof Error ? error.message : 'Erro ao listar parcelas';
+      res.status(400).json({ success: false, message });
+    }
+  }
+
+  /**
+   * GET /api/bills/installments/all - Lista todas as parcelas do usuário
+   */
+  async getAllInstallments(req: AuthRequest, res: Response) {
+    try {
+      const installments = await billService.getAllInstallments(req.user!.userId);
+      res.json({ success: true, data: installments });
+    } catch (error) {
+      logger.error('Erro ao listar todas as parcelas:', error);
+      const message = error instanceof Error ? error.message : 'Erro ao listar parcelas';
+      res.status(400).json({ success: false, message });
+    }
+  }
+
+  /**
+   * PUT /api/bills/installments/:id - Atualiza uma parcela
+   */
+  async updateInstallment(req: AuthRequest, res: Response) {
+    try {
+      const installment = await billService.updateInstallment(req.params['id']!, req.user!.userId, req.body);
+      res.json({ success: true, data: installment, message: 'Parcela atualizada com sucesso' });
+    } catch (error) {
+      logger.error('Erro ao atualizar parcela:', error);
+      const message = error instanceof Error ? error.message : 'Erro ao atualizar parcela';
+      res.status(400).json({ success: false, message });
+    }
+  }
+
+  /**
+   * POST /api/bills/installments/:id/pay - Marca parcela como paga
+   */
+  async payInstallment(req: AuthRequest, res: Response) {
+    try {
+      const { transactionId } = req.body;
+      const installment = await billService.payInstallment(req.params['id']!, req.user!.userId, transactionId);
+      res.json({ success: true, data: installment, message: 'Parcela marcada como paga' });
+    } catch (error) {
+      logger.error('Erro ao pagar parcela:', error);
+      const message = error instanceof Error ? error.message : 'Erro ao pagar parcela';
+      res.status(400).json({ success: false, message });
+    }
+  }
+
+  /**
+   * DELETE /api/bills/installments/:id - Exclui parcela não paga
+   */
+  async deleteInstallment(req: AuthRequest, res: Response) {
+    try {
+      await billService.deleteInstallment(req.params['id']!, req.user!.userId);
+      res.json({ success: true, message: 'Parcela excluída com sucesso' });
+    } catch (error) {
+      logger.error('Erro ao excluir parcela:', error);
+      const message = error instanceof Error ? error.message : 'Erro ao excluir parcela';
+      res.status(400).json({ success: false, message });
+    }
+  }
+
+  /**
+   * POST /api/bills/:id/regenerate-installments - Regenera parcelas faltantes
+   */
+  async regenerateInstallments(req: AuthRequest, res: Response) {
+    try {
+      const count = await billService.regenerateInstallments(req.params['id']!, req.user!.userId);
+      res.json({ success: true, data: { count }, message: `${count} parcelas geradas com sucesso` });
+    } catch (error) {
+      logger.error('Erro ao regenerar parcelas:', error);
+      const message = error instanceof Error ? error.message : 'Erro ao regenerar parcelas';
+      res.status(400).json({ success: false, message });
+    }
+  }
 }
 
 export default new BillsController();

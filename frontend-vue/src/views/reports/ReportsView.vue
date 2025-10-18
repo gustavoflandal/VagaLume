@@ -62,22 +62,6 @@ onMounted(() => {
         </div>
       </router-link>
 
-      <!-- Relatório de Cofrinhos -->
-      <router-link
-        to="/reports/piggy-banks"
-        class="card hover:shadow-lg transition-shadow cursor-pointer"
-      >
-        <div class="flex items-center space-x-4">
-          <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
-            <span class="text-2xl">🐷</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-gray-900">Evolução dos Cofrinhos</h3>
-            <p class="text-sm text-gray-600">Progresso das metas</p>
-          </div>
-        </div>
-      </router-link>
-
       <!-- Relatório de Contas Recorrentes -->
       <router-link
         to="/reports/recurring-bills"

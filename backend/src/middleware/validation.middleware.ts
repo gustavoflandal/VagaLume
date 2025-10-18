@@ -120,7 +120,7 @@ export const updateTransactionSchema = z
 export const createCategorySchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Cor inválida (use formato #RRGGBB)').optional(),
-  icon: z.string().max(10, 'Ícone muito longo').optional(),
+  icon: z.string().max(50, 'Ícone muito longo').optional(),
   description: z.string().max(500, 'Descrição muito longa').optional(),
   parentId: z.string().cuid('ID de categoria pai inválido').optional(),
 });
@@ -129,7 +129,7 @@ export const updateCategorySchema = z
   .object({
     name: z.string().min(1).max(100).optional(),
     color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    icon: z.string().max(10).optional(),
+    icon: z.string().max(50).optional(),
     description: z.string().max(500).optional(),
     parentId: z.string().cuid().nullable().optional(),
     isActive: z.boolean().optional(),
@@ -148,7 +148,7 @@ export const createAccountSchema = z.object({
   initialBalance: z.number().default(0),
   currency: z.string().length(3, 'Código de moeda deve ter 3 caracteres').default('BRL'),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  icon: z.string().max(10).optional(),
+  icon: z.string().max(50).optional(),
   description: z.string().max(500).optional(),
   includeInNetWorth: z.boolean().default(true),
 });
@@ -159,7 +159,7 @@ export const updateAccountSchema = z
     type: z.enum(['CHECKING', 'SAVINGS', 'CREDIT_CARD', 'INVESTMENT', 'CASH', 'OTHER']).optional(),
     currency: z.string().length(3).optional(),
     color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    icon: z.string().max(10).optional(),
+    icon: z.string().max(50).optional(),
     description: z.string().max(500).optional(),
     includeInNetWorth: z.boolean().optional(),
     isActive: z.boolean().optional(),

@@ -36,8 +36,7 @@ async function handleSubmit() {
       <div class="bg-white rounded-lg shadow-lg p-8">
         <!-- Logo -->
         <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold text-primary-500">🔥 VagaLume</h1>
-          <p class="text-gray-600 mt-2">Gestão Financeira Pessoal</p>
+          <img src="@/assets/logo.png" alt="VagaLume" class="mx-auto mb-4 h-42" />
         </div>
 
         <!-- Formulário de Login -->

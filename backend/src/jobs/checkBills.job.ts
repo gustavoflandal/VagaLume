@@ -51,7 +51,7 @@ export async function checkUpcomingBills() {
           
           for (const bill of upcomingBills) {
             const nextDate = bill.nextDate ? bill.nextDate.toISOString().split('T')[0] : 'data não calculada';
-            logger.info(`  - ${bill.name}: R$ ${bill.amountMin}-${bill.amountMax} (${nextDate})`);
+            logger.info(`  - ${bill.name}: R$ ${bill.amount} (${nextDate})`);
           }
 
           notified++;

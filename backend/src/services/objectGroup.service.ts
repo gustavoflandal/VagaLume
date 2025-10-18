@@ -19,7 +19,6 @@ class ObjectGroupService {
     const groups = await prisma.objectGroup.findMany({
       where: { userId },
       include: {
-        piggyBanks: true,
         bills: true,
       },
       orderBy: { order: 'asc' },
@@ -35,7 +34,6 @@ class ObjectGroupService {
     const group = await prisma.objectGroup.findFirst({
       where: { id: groupId, userId },
       include: {
-        piggyBanks: true,
         bills: true,
       },
     });
