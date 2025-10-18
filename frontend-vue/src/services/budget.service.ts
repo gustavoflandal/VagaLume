@@ -32,19 +32,23 @@ export interface AutoBudget {
 
 export interface CreateBudgetData {
   name: string
+  active?: boolean
+  order?: number
 }
 
 export interface CreateBudgetLimitData {
   budgetId: string
   amount: number
-  startDate: string
-  endDate: string
+  startDate: string | Date
+  endDate: string | Date
+  currency?: string
 }
 
 export interface CreateAutoBudgetData {
   type: 'RESET' | 'ROLLOVER' | 'ADJUSTED'
   period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY'
   amount: number
+  currency?: string
 }
 
 export const budgetService = {
@@ -86,7 +90,9 @@ export const budgetService = {
 
   // Budget Limits
   async createLimit(data: CreateBudgetLimitData): Promise<BudgetLimit> {
+    console.log('[budgetService.createLimit] Enviando para API:', data)
     const response = await api.post<ApiResponse<BudgetLimit>>('/budgets/limits', data)
+    console.log('[budgetService.createLimit] Resposta da API:', response.data)
     return response.data.data
   },
 
