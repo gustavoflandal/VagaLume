@@ -1,10 +1,11 @@
-import { AutoBudgetType, AutoBudgetPeriod } from '@prisma/client';
+import { AutoBudgetType, AutoBudgetPeriod, BudgetType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
 
 export interface CreateBudgetDTO {
   name: string;
+  type?: BudgetType;
   order?: number;
 }
 
@@ -16,6 +17,7 @@ export interface UpdateBudgetDTO {
 
 export interface CreateBudgetLimitDTO {
   budgetId: string;
+  categoryId?: string;
   amount: number;
   startDate: Date;
   endDate: Date;
@@ -42,6 +44,9 @@ class BudgetService {
       },
       include: {
         limits: {
+          include: {
+            category: true,
+          },
           orderBy: { startDate: 'desc' },
         },
         autoBudget: true,
@@ -84,6 +89,7 @@ class BudgetService {
     const budget = await prisma.budget.create({
       data: {
         name: data.name,
+        type: data.type || BudgetType.GENERAL,
         order: data.order ?? 0,
         userId,
       },
@@ -125,21 +131,46 @@ class BudgetService {
    * Cria limite para budget
    */
   async createLimit(userId: string, data: CreateBudgetLimitDTO) {
-    // Verifica se o budget pertence ao usuário
-    await this.findById(data.budgetId, userId);
+    try {
+      logger.info('[createLimit] Iniciando criação de limite:', data);
+      
+      // Verifica se o budget pertence ao usuário
+      const budget = await this.findById(data.budgetId, userId);
+      logger.info('[createLimit] Budget encontrado:', { id: budget.id, type: budget.type });
 
-    const limit = await prisma.budgetLimit.create({
-      data: {
-        budgetId: data.budgetId,
-        amount: new Decimal(data.amount),
-        startDate: data.startDate,
-        endDate: data.endDate,
-        currency: data.currency ?? 'BRL',
-      },
-    });
+      // Validações baseadas no tipo de orçamento
+      if (budget.type === BudgetType.CATEGORY && !data.categoryId) {
+        logger.error('[createLimit] Erro: Categoria obrigatória para orçamento por categoria');
+        throw new Error('Categoria é obrigatória para orçamento por categoria');
+      }
 
-    logger.info(`Limite criado para budget ${data.budgetId}: R$ ${data.amount}`);
-    return limit;
+      if (budget.type === BudgetType.GENERAL && data.categoryId) {
+        logger.error('[createLimit] Erro: Orçamento geral não pode ter categoria');
+        throw new Error('Orçamento geral não pode ter categoria específica');
+      }
+
+      logger.info('[createLimit] Validações OK, criando limite no banco...');
+      
+      const limit = await prisma.budgetLimit.create({
+        data: {
+          budgetId: data.budgetId,
+          categoryId: data.categoryId || null,
+          amount: new Decimal(data.amount),
+          startDate: data.startDate,
+          endDate: data.endDate,
+          currency: data.currency ?? 'BRL',
+        },
+        include: {
+          category: true,
+        },
+      });
+
+      logger.info(`[createLimit] Limite criado com sucesso: ${limit.id}`);
+      return limit;
+    } catch (error) {
+      logger.error('[createLimit] Erro ao criar limite:', error);
+      throw error;
+    }
   }
 
   /**

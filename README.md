@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![VagaLume Logo](docs/images/logo.png)
+![VagaLume Logo](./frontend-vue/src/assets/logo.png)
 
 **Sistema completo de gestão financeira pessoal desenvolvido em JavaScript/TypeScript**
 
@@ -11,7 +11,7 @@
 [![Vue.js Version](https://img.shields.io/badge/vue-%5E3.4.0-4FC08D)](https://vuejs.org/)
 [![MySQL Version](https://img.shields.io/badge/mysql-%5E8.0.0-4479A1)](https://www.mysql.com/)
 
-[🌟 Demo](https://vagalume-demo.com) | [📖 Documentação](docs/) | [🐛 Issues](issues/) | [💬 Discussões](discussions/)
+[🌟 Demo Online](https://vagalume-demo.vercel.app) | [📖 Manual do Usuário](https://vagalume-demo.vercel.app/manual) | [🔗 Documentação API](https://vagalume-demo.vercel.app/api-docs) | [🐛 Issues](https://github.com/gustavoflandal/VagaLume/issues) | [💬 Discussões](https://github.com/gustavoflandal/VagaLume/discussions)
 
 </div>
 
@@ -59,38 +59,75 @@ VagaLume utiliza o sistema de **contabilidade de partida dupla** para garantir p
 ## ✨ Funcionalidades
 
 ### **📊 Gestão Financeira Core**
-- ✅ Contas bancárias e cartões de crédito
-- ✅ Transações (receitas, despesas, transferências)
-- ✅ Categorização automática e manual
-- ✅ Orçamentos mensais e anuais
-- ✅ Saldos em tempo real
+- ✅ Contas bancárias múltiplas (corrente, poupança, cartão de crédito, investimentos)
+- ✅ Transações (receitas, despesas, transferências) com categorização
+- ✅ Categorias personalizáveis com ícones e cores
+- ✅ Saldos calculados automaticamente em tempo real
+- ✅ Múltiplas moedas suportadas (BRL, USD, EUR, etc.)
 
 ### **📈 Relatórios e Analytics**
-- ✅ Dashboard executivo
-- ✅ Relatórios mensais/anuais
-- ✅ Gráficos interativos
-- ✅ Análise de gastos por categoria
-- ✅ Evolução patrimonial
-- ✅ Comparativos período anterior
+- ✅ Dashboard executivo com métricas principais
+- ✅ Relatórios de gastos por categoria (gráfico pizza + barras)
+- ✅ Análise receitas vs despesas (evolução mensal)
+- ✅ Relatórios de orçamentos (comparação limite vs gasto)
+- ✅ Exportação de dados em CSV
+- ✅ Gráficos interativos com Chart.js
 
 ### **🤖 Automação Inteligente**
-- ✅ Transações recorrentes
-- ✅ Regras de categorização
-- ✅ Alertas e notificações
-- ✅ Importação automática (OFX/CSV)
-- ✅ Sincronização bancária (planejado)
+- ✅ Contas recorrentes (bills) com sistema de parcelas
+- ✅ Geração automática de parcelas mensais/anuais
+- ✅ Pagamento de parcelas com vinculação automática a transações
+- ✅ Sistema de notificações (orçamentos, contas próximas do vencimento)
+
+### **🎯 Controle de Orçamentos**
+- ✅ Orçamentos gerais (limite total de gastos)
+- ✅ Orçamentos por categoria (limites específicos)
+- ✅ Acompanhamento visual com barras de progresso
+- ✅ Alertas de status (seguro, atenção, perigo, excedido)
+- ✅ Histórico de desempenho
 
 ### **🔧 Recursos Avançados**
-- ✅ Múltiplas moedas (Real, Dólar, Euro)
-- ✅ Anexos em transações
-- ✅ Tags personalizadas
-- ✅ Exportação de dados
-- ✅ API RESTful completa
-- ✅ Webhooks para integrações
+- ✅ Sistema completo de configurações (moeda, idioma, notificações)
+- ✅ Exportação/importação de dados (JSON)
+- ✅ API RESTful completa com documentação interativa
+- ✅ Manual de utilização completo integrado
+- ✅ Design responsivo (desktop, tablet, mobile)
+- ✅ Tema claro/escuro automático
+
+### **🔒 Segurança e Privacidade**
+- ✅ Autenticação JWT com refresh tokens
+- ✅ Criptografia de dados sensíveis
+- ✅ Controle de sessões ativas
+- ✅ Backup automático de dados
 
 ---
 
-## 🛠 Tecnologias
+## 🚀 Acesso Rápido
+
+### **🔗 Links Principais**
+- **🌟 [Demo Online](https://vagalume-demo.vercel.app)** - Teste o sistema completo
+- **📖 [Manual do Usuário](https://vagalume-demo.vercel.app/manual)** - Guia completo de utilização
+- **🔗 [Documentação API](https://vagalume-demo.vercel.app/api-docs)** - Para desenvolvedores
+- **🐛 [Reportar Bug](https://github.com/gustavoflandal/VagaLume/issues)** - Ajude a melhorar
+
+### **🎯 Principais Recursos**
+- **💰 Contas Bancárias** - Gerencie múltiplas contas e cartões
+- **📊 Dashboard** - Visão geral das suas finanças
+- **🔄 Transações** - Registre receitas, despesas e transferências
+- **🏷️ Categorias** - Organize seus gastos por tipo
+- **📅 Contas Recorrentes** - Automatize contas mensais e parcelas
+- **💹 Orçamentos** - Controle limites de gastos
+- **📈 Relatórios** - Análise detalhada com gráficos
+- **⚙️ Configurações** - Personalize o sistema
+
+### **📱 Aplicação Responsiva**
+- ✅ **Desktop** - Interface completa otimizada
+- ✅ **Tablet** - Layout adaptado para telas médias
+- ✅ **Mobile** - Experiência otimizada para smartphones
+
+---
+
+## 📚 Documentação
 
 ### **Backend**
 ```json
@@ -377,13 +414,6 @@ npm run test:e2e:open
 
 ---
 
-## 🚀 Deploy
-
-### **Ambiente de Produção**
-
-```bash
-# Clone e configure
-git clone https://github.com/seu-usuario/vagalume.git
 cd vagalume
 
 # Configure variáveis de produção

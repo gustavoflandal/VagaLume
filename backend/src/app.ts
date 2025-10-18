@@ -14,6 +14,7 @@ import { notFoundHandler } from '@/middleware/notFoundHandler';
 // Routes
 import authRoutes from '@/routes/auth';
 import userRoutes from '@/routes/users';
+import settingsRoutes from '@/routes/settings';
 import accountRoutes from '@/routes/accounts';
 import transactionRoutes from '@/routes/transactions';
 import categoryRoutes from '@/routes/categories';
@@ -112,6 +113,11 @@ class App {
             profile: 'GET /api/users/me',
             update: 'PUT /api/users/me',
             changePassword: 'PUT /api/users/me/password',
+          },
+          settings: {
+            get: 'GET /api/settings',
+            update: 'PUT /api/settings',
+            reset: 'POST /api/settings/reset',
           },
           accounts: {
             list: 'GET /api/accounts',
@@ -252,6 +258,7 @@ class App {
     // API routes
     this.app.use('/api/auth', authRoutes);
     this.app.use('/api/users', userRoutes);
+    this.app.use('/api/settings', settingsRoutes);
     this.app.use('/api/accounts', accountRoutes);
     this.app.use('/api/transactions', transactionRoutes);
     this.app.use('/api/categories', categoryRoutes);

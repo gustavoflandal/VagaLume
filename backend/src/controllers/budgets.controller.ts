@@ -94,11 +94,13 @@ class BudgetsController {
    */
   async createLimit(req: AuthRequest, res: Response) {
     try {
+      logger.info('Recebendo requisição para criar limite:', req.body);
       const limit = await budgetService.createLimit(req.user!.userId, req.body);
       res.status(201).json({ success: true, data: limit, message: 'Limite criado com sucesso' });
     } catch (error) {
       logger.error('Erro ao criar limite:', error);
       const message = error instanceof Error ? error.message : 'Erro ao criar limite';
+      logger.error('Mensagem de erro:', message);
       res.status(400).json({ success: false, message });
     }
   }

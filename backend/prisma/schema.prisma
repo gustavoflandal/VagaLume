@@ -43,6 +43,7 @@ model User {
   attachments   Attachment[]
   objectGroups  ObjectGroup[]
   webhooks      Webhook[]
+  settings      UserSettings?
 
   @@map("users")
 }
@@ -139,6 +140,7 @@ model Category {
   subcategories Category[]   @relation("CategorySubcategories")
   transactions Transaction[]
   bills        Bill[]
+  budgetLimits BudgetLimit[]
   notes        Note[]
   attachments  Attachment[]
 
@@ -261,14 +263,22 @@ model BillInstallment {
 // BUDGETS (Orçamentos Avançados)
 // ============================================
 
+enum BudgetType {
+  GENERAL   // Orçamento geral (todas as categorias)
+  CATEGORY  // Orçamento por categoria específica
+
+  @@map("budget_type")
+}
+
 model Budget {
-  id            String   @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String
-  active        Boolean  @default(true)
-  order         Int      @default(0)
-  userId        String   @map("user_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  type          BudgetType @default(GENERAL) // Tipo de orçamento
+  active        Boolean    @default(true)
+  order         Int        @default(0)
+  userId        String     @map("user_id")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
 
   // Relacionamentos
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -283,6 +293,7 @@ model Budget {
 model BudgetLimit {
   id         String   @id @default(cuid())
   budgetId   String   @map("budget_id")
+  categoryId String?  @map("category_id") // Categoria específica (null = todas)
   amount     Decimal  @db.Decimal(15, 2)
   startDate  DateTime @map("start_date")
   endDate    DateTime @map("end_date")
@@ -291,7 +302,8 @@ model BudgetLimit {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relacionamentos
-  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  budget   Budget    @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
 
   @@map("budget_limits")
 }
@@ -775,4 +787,39 @@ model TransactionLink {
 
   @@unique([fromTransactionId, toTransactionId, linkTypeId])
   @@map("transaction_links")
+}
+
+// ============================================
+// USER SETTINGS (Configurações do Usuário)
+// ============================================
+
+model UserSettings {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  
+  // Configurações Gerais
+  currency        String   @default("BRL")
+  dateFormat      String   @default("DD/MM/YYYY") @map("date_format")
+  language        String   @default("pt-BR")
+  timezone        String   @default("America/Sao_Paulo")
+  
+  // Preferências de Interface
+  theme           String   @default("light") // light, dark, auto
+  showBalance     Boolean  @default(true) @map("show_balance")
+  autoApplyRules  Boolean  @default(true) @map("auto_apply_rules")
+  
+  // Notificações
+  notifyBillsDue       Boolean  @default(true) @map("notify_bills_due")
+  notifyBudgetExceeded Boolean  @default(true) @map("notify_budget_exceeded")
+  notifyRecurrences    Boolean  @default(true) @map("notify_recurrences")
+  billsDueDays         Int      @default(3) @map("bills_due_days") // Dias de antecedência
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relacionamento
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_settings")
 }

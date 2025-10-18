@@ -67,7 +67,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'budgets/new',
         name: 'BudgetNew',
-        component: () => import('@/views/budgets/BudgetsView.vue'), // Temporário
+        component: () => import('@/views/budgets/BudgetFormView.vue'),
+      },
+      {
+        path: 'budgets/:id/edit',
+        name: 'BudgetEdit',
+        component: () => import('@/views/budgets/BudgetFormView.vue'),
       },
       {
         path: 'rules',
@@ -117,12 +122,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'reports/budget-analysis',
         name: 'ReportBudgetAnalysis',
-        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+        component: () => import('@/views/reports/BudgetAnalysisView.vue'),
       },
       {
         path: 'reports/recurring-bills',
         name: 'ReportRecurringBills',
-        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+        component: () => import('@/views/reports/RecurringBillsView.vue'),
       },
       {
         path: 'reports/tags',
@@ -130,14 +135,19 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/reports/ReportsView.vue'), // Temporário
       },
       {
-        path: 'settings',
-        name: 'Settings',
-        component: () => import('@/views/SettingsView.vue'),
+        path: 'manual',
+        name: 'UserManual',
+        component: () => import('@/views/UserManualView.vue'),
       },
       {
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),
+      },
+      {
+        path: 'api-docs',
+        name: 'ApiDocs',
+        component: () => import('@/views/ApiDocView.vue'),
       },
     ],
   },

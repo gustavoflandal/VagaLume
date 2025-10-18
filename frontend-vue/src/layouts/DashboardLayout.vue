@@ -15,8 +15,9 @@ import {
   DocumentTextIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  LinkIcon,
   CogIcon,
+  DocumentChartBarIcon,
+  BookOpenIcon,
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -33,8 +34,8 @@ const navigation = [
   { name: 'Categorias', to: '/categories', icon: TagIcon },
   { name: 'Contas Recorrentes', to: '/bills', icon: DocumentTextIcon },
   { name: 'Orçamentos', to: '/budgets', icon: ChartBarIcon },
-  { name: 'Webhooks', to: '/webhooks', icon: LinkIcon },
-  { name: 'Relatórios', to: '/reports', icon: ChartBarIcon },
+  { name: 'Relatórios', to: '/reports', icon: DocumentChartBarIcon },
+  { name: 'Manual', to: '/manual', icon: BookOpenIcon },
   { name: 'Configurações', to: '/settings', icon: CogIcon },
   { name: 'Perfil', to: '/profile', icon: UserCircleIcon },
 ]
