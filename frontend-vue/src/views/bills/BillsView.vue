@@ -5,16 +5,20 @@ import { useBillStore } from '@/stores/bill'
 import { Plus, Calendar, DollarSign, TrendingUp, Link, Pencil, Trash2, FileText, List, AlertCircle, CreditCard, CheckCircle, Clock } from 'lucide-vue-next'
 import BillInstallmentsModal from '@/components/BillInstallmentsModal.vue'
 import EditInstallmentModal from '@/components/EditInstallmentModal.vue'
+import TransactionModal from '@/components/TransactionModal.vue'
 import type { BillInstallment } from '@/services/bill.service'
+import { TransactionType, TransactionStatus } from '@/types'
 
 const router = useRouter()
 const store = useBillStore()
 
 const showInstallmentsModal = ref(false)
 const showEditInstallmentModal = ref(false)
+const showTransactionModal = ref(false)
 const selectedBillId = ref('')
 const selectedBillName = ref('')
 const selectedInstallment = ref<BillInstallment | null>(null)
+const transactionInitialData = ref<any>(null)
 const modalKey = ref(0) // Key para forçar remontagem do modal
 
 const showUpcoming = ref(false)
@@ -131,10 +135,27 @@ function handleCloseInstallmentsModal() {
   // Store já recarregou os dados automaticamente
 }
 
-function handlePayInstallment(installmentId: string) {
-  // TODO: Abrir modal de transação com dados preenchidos
-  console.log('Pagar parcela:', installmentId)
-  alert('Funcionalidade de pagamento será implementada em breve')
+function handlePayInstallment(installment: BillInstallment) {
+  // Preparar dados iniciais para o modal de transação
+  transactionInitialData.value = {
+    type: TransactionType.EXPENSE,
+    amount: Number(installment.amount), // Garantir que seja number
+    description: `Pagamento - ${installment.bill?.name || 'Conta'} - Parcela ${installment.installmentSequence}`,
+    date: new Date().toISOString().split('T')[0],
+    fromAccountId: installment.bill?.accountId || '',
+    categoryId: installment.bill?.categoryId || '',
+    status: TransactionStatus.COMPLETED,
+    // Dados extras para vincular com a parcela
+    _installmentId: installment.id
+  }
+  showTransactionModal.value = true
+}
+
+async function handleTransactionSaved() {
+  // Recarregar dados após salvar transação
+  await store.fetchAll()
+  showTransactionModal.value = false
+  transactionInitialData.value = null
 }
 
 function handleEditInstallment(installment: BillInstallment) {
@@ -404,7 +425,7 @@ function handleInstallmentUpdated() {
           <div class="flex items-center space-x-2 ml-4">
             <button
               v-if="!installment.paid"
-              @click="handlePayInstallment(installment.id)"
+              @click="handlePayInstallment(installment)"
               class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
               title="Pagar parcela"
             >
@@ -523,6 +544,14 @@ function handleInstallmentUpdated() {
       :installment="selectedInstallment"
       @close="showEditInstallmentModal = false"
       @updated="handleInstallmentUpdated"
+    />
+
+    <TransactionModal
+      v-if="showTransactionModal"
+      :initial-data="transactionInitialData"
+      title="Registrar Pagamento de Parcela"
+      @close="showTransactionModal = false"
+      @saved="handleTransactionSaved"
     />
   </div>
 </template>
