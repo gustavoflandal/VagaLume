@@ -254,6 +254,33 @@ function getStatusLabel(status: TransactionStatus): string {
   }
   return labels[status]
 }
+
+// Calcular saldo acumulado para cada transação
+const transactionsWithBalance = computed(() => {
+  if (!transactions.value || transactions.value.length === 0) return []
+  
+  // Ordenar por data crescente
+  const sorted = [...transactions.value].sort((a, b) => {
+    return new Date(a.date).getTime() - new Date(b.date).getTime()
+  })
+  
+  let runningBalance = 0
+  
+  return sorted.map(transaction => {
+    // Calcular impacto no saldo
+    if (transaction.type === TransactionType.INCOME) {
+      runningBalance += transaction.amount
+    } else if (transaction.type === TransactionType.EXPENSE) {
+      runningBalance -= transaction.amount
+    }
+    // Transferências não afetam o saldo total (apenas movem entre contas)
+    
+    return {
+      ...transaction,
+      balance: runningBalance
+    }
+  })
+})
 </script>
 
 <template>
@@ -363,12 +390,15 @@ function getStatusLabel(status: TransactionStatus): string {
                   Status
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Saldo
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="transaction in transactions" :key="transaction.id" class="hover:bg-gray-50">
+              <tr v-for="transaction in transactionsWithBalance" :key="transaction.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {{ formatDate(transaction.date) }}
                 </td>
@@ -411,6 +441,16 @@ function getStatusLabel(status: TransactionStatus): string {
                     class="px-2 py-1 rounded-full text-xs font-medium"
                   >
                     {{ getStatusLabel(transaction.status) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
+                  <span
+                    :class="{
+                      'text-green-600': transaction.balance >= 0,
+                      'text-red-600': transaction.balance < 0
+                    }"
+                  >
+                    {{ formatCurrency(transaction.balance) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
