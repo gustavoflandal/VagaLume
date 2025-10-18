@@ -2,11 +2,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBudgetStore } from '@/stores/budget'
+import { useCategoryStore } from '@/stores/category'
 import { ArrowLeft, Save, Plus, Trash2, Calendar } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
 const store = useBudgetStore()
+const categoryStore = useCategoryStore()
 
 const isEditing = computed(() => !!route.params.id)
 const budgetId = computed(() => route.params.id as string)
@@ -17,14 +19,18 @@ const error = ref('')
 // Formulário principal
 const form = ref({
   name: '',
+  type: 'GENERAL' as 'GENERAL' | 'CATEGORY',
   active: true,
   order: 0
 })
+
+const categories = computed(() => categoryStore.categories)
 
 // Limites
 const limits = ref<any[]>([])
 const showLimitForm = ref(false)
 const limitForm = ref({
+  categoryId: '',
   amount: 0,
   startDate: '',
   endDate: '',
@@ -41,6 +47,9 @@ const autoBudgetForm = ref({
 })
 
 onMounted(async () => {
+  // Carregar categorias
+  await categoryStore.fetchAll()
+  
   if (isEditing.value) {
     await loadBudget()
   } else {
@@ -60,6 +69,7 @@ async function loadBudget() {
     
     form.value = {
       name: budget.name,
+      type: budget.type || 'GENERAL',
       active: budget.active,
       order: budget.order
     }
@@ -116,25 +126,38 @@ async function handleSubmit() {
           // Se o limite já tem ID, atualizar; senão, criar
           if (limit.id) {
             console.log('Atualizando limite existente:', limit.id)
-            await store.updateLimit(limit.id, {
+            const updateData: any = {
               amount: limit.amount,
               startDate: limit.startDate,
               endDate: limit.endDate,
               currency: limit.currency
-            })
+            }
+            
+            // Adicionar categoryId se existir
+            if (limit.categoryId) {
+              updateData.categoryId = limit.categoryId
+            }
+            
+            await store.updateLimit(limit.id, updateData)
           } else {
             console.log('Criando novo limite para budget:', savedBudgetId)
             // Converter strings de data para Date objects
             const startDate = new Date(limit.startDate + 'T12:00:00')
             const endDate = new Date(limit.endDate + 'T12:00:00')
             
-            const limitData = {
+            const limitData: any = {
               budgetId: savedBudgetId,
               amount: Number(limit.amount),
               startDate: startDate,
               endDate: endDate,
               currency: limit.currency || 'BRL'
             }
+            
+            // Adicionar categoryId se existir (orçamento por categoria)
+            if (limit.categoryId) {
+              limitData.categoryId = limit.categoryId
+            }
+            
             console.log('Dados do limite a serem enviados:', limitData)
             const createdLimit = await store.createLimit(limitData)
             console.log('Limite criado:', createdLimit)
@@ -203,6 +226,7 @@ function addLimit() {
   
   // Reset form
   limitForm.value = {
+    categoryId: '',
     amount: 0,
     startDate: '',
     endDate: '',
@@ -229,6 +253,11 @@ function formatCurrency(value: number): string {
 function formatDate(date: string): string {
   const d = new Date(date)
   return d.toLocaleDateString('pt-BR')
+}
+
+function getCategoryName(categoryId: string): string {
+  const category = categories.value.find(c => c.id === categoryId)
+  return category ? `${category.icon} ${category.name}` : 'Categoria não encontrada'
 }
 </script>
 
@@ -281,6 +310,26 @@ function formatDate(date: string): string {
             />
           </div>
 
+          <!-- Tipo de Orçamento -->
+          <div>
+            <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de Orçamento *
+            </label>
+            <select
+              id="type"
+              v-model="form.type"
+              class="input"
+              required
+            >
+              <option value="GENERAL">Geral (Todas as Categorias)</option>
+              <option value="CATEGORY">Por Categoria</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">
+              <strong>Geral:</strong> controla gastos totais. 
+              <strong>Por Categoria:</strong> define limites específicos por categoria.
+            </p>
+          </div>
+
           <!-- Ativo -->
           <div class="flex items-center">
             <input
@@ -330,6 +379,26 @@ function formatDate(date: string): string {
         <div v-if="showLimitForm" class="bg-gray-50 rounded-lg p-4 mb-4">
           <h3 class="font-medium text-gray-900 mb-3">Novo Limite</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Categoria (apenas se tipo = CATEGORY) -->
+            <div v-if="form.type === 'CATEGORY'" class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Categoria *
+              </label>
+              <select v-model="limitForm.categoryId" class="input" required>
+                <option value="">Selecione uma categoria</option>
+                <option 
+                  v-for="category in categories" 
+                  :key="category.id" 
+                  :value="category.id"
+                >
+                  {{ category.icon }} {{ category.name }}
+                </option>
+              </select>
+              <p class="text-xs text-gray-500 mt-1">
+                Selecione a categoria que terá este limite de gastos
+              </p>
+            </div>
+            
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Valor do Limite *
@@ -395,7 +464,12 @@ function formatDate(date: string): string {
             class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
           >
             <div class="flex-1">
-              <p class="font-medium text-gray-900">{{ formatCurrency(Number(limit.amount)) }}</p>
+              <div class="flex items-center space-x-2 mb-1">
+                <p class="font-medium text-gray-900">{{ formatCurrency(Number(limit.amount)) }}</p>
+                <span v-if="limit.categoryId" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  {{ getCategoryName(limit.categoryId) }}
+                </span>
+              </div>
               <p class="text-sm text-gray-600">
                 <Calendar class="w-4 h-4 inline mr-1" />
                 {{ formatDate(limit.startDate) }} a {{ formatDate(limit.endDate) }}

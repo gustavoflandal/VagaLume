@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/types'
 export interface Budget {
   id: string
   name: string
+  type: 'GENERAL' | 'CATEGORY' // Tipo de orçamento
   active: boolean
   userId: string
   createdAt: string
@@ -13,11 +14,13 @@ export interface Budget {
 export interface BudgetLimit {
   id: string
   budgetId: string
+  categoryId?: string // Categoria específica (null = todas)
   amount: number
   startDate: string
   endDate: string
   createdAt: string
   updatedAt: string
+  category?: any // Relacionamento com categoria
 }
 
 export interface AutoBudget {
@@ -32,12 +35,14 @@ export interface AutoBudget {
 
 export interface CreateBudgetData {
   name: string
+  type?: 'GENERAL' | 'CATEGORY'
   active?: boolean
   order?: number
 }
 
 export interface CreateBudgetLimitData {
   budgetId: string
+  categoryId?: string // Categoria específica
   amount: number
   startDate: string | Date
   endDate: string | Date

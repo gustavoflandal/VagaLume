@@ -22,10 +22,16 @@ interface BudgetAnalysis {
 
 const isLoading = ref(true)
 const budgets = ref<any[]>([])
+const selectedBudgetId = ref<string>('') // NOVO - Orçamento selecionado
 const analysis = ref<BudgetAnalysis[]>([])
 const totalBudget = ref(0)
 const totalSpent = ref(0)
 const totalRemaining = ref(0)
+
+const selectedBudget = computed(() => {
+  if (!selectedBudgetId.value) return null
+  return budgets.value.find(b => b.id === selectedBudgetId.value)
+})
 
 // Filtro de período (mês atual por padrão)
 const now = new Date()
@@ -44,6 +50,11 @@ async function loadData() {
     const budgetsData = await budgetService.getAll()
     budgets.value = Array.isArray(budgetsData) ? budgetsData : []
     
+    // Selecionar primeiro orçamento por padrão se nenhum estiver selecionado
+    if (!selectedBudgetId.value && budgets.value.length > 0) {
+      selectedBudgetId.value = budgets.value[0].id
+    }
+    
     // Carregar transações de despesa do período
     const params: any = {
       type: 'EXPENSE',
@@ -55,11 +66,13 @@ async function loadData() {
     const response = await transactionService.getAll(params)
     const transactions = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : []
     
-    // Calcular total gasto
-    const totalExpenses = transactions.reduce((sum, t) => sum + Number(t.amount), 0)
+    // Filtrar budgets baseado na seleção
+    const budgetsToAnalyze = selectedBudgetId.value 
+      ? budgets.value.filter(b => b.id === selectedBudgetId.value)
+      : budgets.value
     
     // Analisar cada budget
-    analysis.value = budgets.value
+    analysis.value = budgetsToAnalyze
       .filter(budget => budget.active && budget.limits && budget.limits.length > 0)
       .map(budget => {
         // Pegar o limite mais recente que está no período
@@ -73,7 +86,19 @@ async function loadData() {
         }) || budget.limits[0]
         
         const limitAmount = currentLimit ? Number(currentLimit.amount) : 0
-        const spent = totalExpenses // Simplificado: considera todas as despesas
+        
+        // Calcular gastos baseado no tipo de orçamento
+        let spent = 0
+        if (budget.type === 'CATEGORY' && currentLimit?.categoryId) {
+          // Orçamento por categoria: filtrar transações da categoria específica
+          spent = transactions
+            .filter((t: any) => t.categoryId === currentLimit.categoryId)
+            .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+        } else {
+          // Orçamento geral: todas as despesas
+          spent = totalExpenses
+        }
+        
         const remaining = limitAmount - spent
         const percentage = limitAmount > 0 ? (spent / limitAmount) * 100 : 0
         
@@ -261,8 +286,27 @@ function exportCSV() {
 
     <!-- Filtros -->
     <div class="card mb-6">
-      <h2 class="text-lg font-bold text-gray-900 mb-4">Período</h2>
+      <h2 class="text-lg font-bold text-gray-900 mb-4">Filtros</h2>
+      
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Seletor de Orçamento -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Orçamento
+          </label>
+          <select v-model="selectedBudgetId" @change="loadData" class="input">
+            <option value="">Todos os Orçamentos</option>
+            <option 
+              v-for="budget in budgets" 
+              :key="budget.id" 
+              :value="budget.id"
+            >
+              {{ budget.name }} ({{ budget.type === 'GENERAL' ? 'Geral' : 'Por Categoria' }})
+            </option>
+          </select>
+        </div>
+        
+        <!-- Data Inicial -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Data Inicial
@@ -389,10 +433,18 @@ function exportCSV() {
                   <span :class="['px-3 py-1 text-xs font-medium rounded-full', getStatusBadge(item.status).class]">
                     {{ getStatusBadge(item.status).text }}
                   </span>
+                  <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                    {{ item.budget.type === 'GENERAL' ? 'Geral' : 'Por Categoria' }}
+                  </span>
                 </div>
-                <p class="text-sm text-gray-600" v-if="item.limit">
-                  Período: {{ formatDate(item.limit.startDate.split('T')[0]) }} a {{ formatDate(item.limit.endDate.split('T')[0]) }}
-                </p>
+                <div class="space-y-1">
+                  <p class="text-sm text-gray-600" v-if="item.limit">
+                    Período: {{ formatDate(item.limit.startDate.split('T')[0]) }} a {{ formatDate(item.limit.endDate.split('T')[0]) }}
+                  </p>
+                  <p class="text-sm text-gray-600" v-if="item.budget.type === 'CATEGORY' && item.limit?.category">
+                    Categoria: {{ item.limit.category.icon }} {{ item.limit.category.name }}
+                  </p>
+                </div>
               </div>
               <div class="text-right">
                 <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(item.limit ? Number(item.limit.amount) : 0) }}</p>

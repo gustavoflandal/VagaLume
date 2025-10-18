@@ -7,6 +7,9 @@ const router = Router();
 // Todas as rotas requerem autenticação
 router.use(authenticate);
 
+// GET /api/users/me/export - Exporta todos os dados do usuário (deve vir antes de /me)
+router.get('/me/export', usersController.exportData.bind(usersController));
+
 // GET /api/users/me - Retorna dados do usuário autenticado
 router.get('/me', usersController.getMe.bind(usersController));
 

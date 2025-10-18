@@ -120,6 +120,67 @@ class UserService {
 
     logger.info(`Usuário desativado: ${userId}`);
   }
+
+  /**
+   * Exporta todos os dados do usuário
+   */
+  async exportData(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Buscar todos os dados relacionados
+    const [
+      accounts,
+      transactions,
+      categories,
+      bills,
+      budgets,
+      rules,
+      tags,
+      webhooks,
+      settings,
+    ] = await Promise.all([
+      prisma.account.findMany({ where: { userId } }),
+      prisma.transaction.findMany({ where: { userId } }),
+      prisma.category.findMany({ where: { userId } }),
+      prisma.bill.findMany({ where: { userId }, include: { installments: true } }),
+      prisma.budget.findMany({ where: { userId }, include: { limits: true, autoBudget: true } }),
+      prisma.rule.findMany({ where: { userId } }),
+      prisma.tag.findMany({ where: { userId } }),
+      prisma.webhook.findMany({ where: { userId } }),
+      prisma.userSettings.findUnique({ where: { userId } }),
+    ]);
+
+    const exportData = {
+      user,
+      accounts,
+      transactions,
+      categories,
+      bills,
+      budgets,
+      rules,
+      tags,
+      webhooks,
+      settings,
+      exportedAt: new Date().toISOString(),
+    };
+
+    logger.info(`Dados exportados para usuário: ${userId}`);
+    return exportData;
+  }
 }
 
 export default new UserService();

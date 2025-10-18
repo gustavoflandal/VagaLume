@@ -57,6 +57,24 @@ class UsersController {
       res.status(400).json({ success: false, message: 'Erro ao desativar conta' });
     }
   }
+
+  /**
+   * GET /api/users/me/export - Exporta todos os dados do usuário
+   */
+  async exportData(req: AuthRequest, res: Response) {
+    try {
+      const data = await userService.exportData(req.user!.userId);
+      
+      // Definir headers para download
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="vagalume-export-${new Date().toISOString().split('T')[0]}.json"`);
+      
+      res.json(data);
+    } catch (error) {
+      logger.error('Erro ao exportar dados:', error);
+      res.status(400).json({ success: false, message: 'Erro ao exportar dados' });
+    }
+  }
 }
 
 export default new UsersController();

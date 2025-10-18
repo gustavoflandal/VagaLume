@@ -144,6 +144,11 @@ const routes: RouteRecordRaw[] = [
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),
       },
+      {
+        path: 'api-docs',
+        name: 'ApiDocs',
+        component: () => import('@/views/ApiDocView.vue'),
+      },
     ],
   },
 ]
