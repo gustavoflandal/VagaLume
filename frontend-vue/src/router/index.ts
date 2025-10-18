@@ -135,9 +135,9 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/reports/ReportsView.vue'), // Temporário
       },
       {
-        path: 'settings',
-        name: 'Settings',
-        component: () => import('@/views/SettingsView.vue'),
+        path: 'manual',
+        name: 'UserManual',
+        component: () => import('@/views/UserManualView.vue'),
       },
       {
         path: 'profile',
