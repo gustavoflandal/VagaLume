@@ -52,7 +52,10 @@ class App {
     }));
 
     // CORS configuration
-    logger.info(`CORS configurado para origem: ${config.cors.origin}`);
+    const corsOrigin = Array.isArray(config.cors.origin) 
+      ? config.cors.origin.join(', ') 
+      : config.cors.origin;
+    logger.info(`CORS configurado para origem: ${corsOrigin}`);
     this.app.use(cors({
       origin: config.cors.origin,
       methods: config.cors.methods.split(','),

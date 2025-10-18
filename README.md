@@ -36,7 +36,7 @@
 
 ## 🎯 Sobre o Projeto
 
-**VagaLume** é um sistema moderno de gestão financeira pessoal inspirado no [Firefly III](https://github.com/firefly-iii/firefly-iii), completamente reescrito em JavaScript/TypeScript com foco na experiência do usuário brasileiro.
+**VagaLume** é um sistema moderno de gestão financeira pessoal escrito em JavaScript/TypeScript com foco na experiência do usuário brasileiro.
 
 ### **Por que VagaLume?**
 

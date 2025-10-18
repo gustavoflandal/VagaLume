@@ -32,6 +32,19 @@ function getCurrentLimit(budget: any) {
   }) || budget.limits[0]
 }
 
+function getTotalLimitAmount(budget: any) {
+  if (!budget.limits || budget.limits.length === 0) return 0
+  
+  // Para orçamento por categoria, somar todos os limites
+  if (budget.type === 'CATEGORY') {
+    return budget.limits.reduce((sum: number, limit: any) => sum + Number(limit.amount), 0)
+  }
+  
+  // Para orçamento geral, usar apenas o limite atual
+  const currentLimit = getCurrentLimit(budget)
+  return currentLimit ? Number(currentLimit.amount) : 0
+}
+
 async function deleteBudget(id: string) {
   if (confirm('Tem certeza que deseja excluir este orçamento?')) {
     try {
@@ -93,7 +106,7 @@ async function deleteBudget(id: string) {
                 </div>
                 <div>
                   <p class="text-sm text-gray-600">Limite Atual</p>
-                  <p class="text-lg font-bold text-gray-900">{{ formatCurrency(Number(getCurrentLimit(budget).amount)) }}</p>
+                  <p class="text-lg font-bold text-gray-900">{{ formatCurrency(getTotalLimitAmount(budget)) }}</p>
                 </div>
               </div>
               

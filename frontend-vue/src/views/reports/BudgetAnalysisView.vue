@@ -14,6 +14,7 @@ const router = useRouter()
 interface BudgetAnalysis {
   budget: any
   limit: any
+  limitAmount: number
   spent: number
   remaining: number
   percentage: number
@@ -66,6 +67,9 @@ async function loadData() {
     const response = await transactionService.getAll(params)
     const transactions = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : []
     
+    // Calcular total de despesas
+    const totalExpenses = transactions.reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+    
     // Filtrar budgets baseado na seleção
     const budgetsToAnalyze = selectedBudgetId.value 
       ? budgets.value.filter(b => b.id === selectedBudgetId.value)
@@ -85,14 +89,23 @@ async function loadData() {
           return limitStart <= periodEnd && limitEnd >= periodStart
         }) || budget.limits[0]
         
-        const limitAmount = currentLimit ? Number(currentLimit.amount) : 0
+        // Para orçamento por categoria, somar todos os limites
+        let limitAmount = 0
+        if (budget.type === 'CATEGORY') {
+          limitAmount = budget.limits.reduce((sum: number, limit: any) => sum + Number(limit.amount), 0)
+          console.log(`[CATEGORY] Orçamento: ${budget.name}, Limites:`, budget.limits.map((l: any) => Number(l.amount)), 'Total:', limitAmount)
+        } else {
+          limitAmount = currentLimit ? Number(currentLimit.amount) : 0
+          console.log(`[GENERAL] Orçamento: ${budget.name}, Limite:`, limitAmount)
+        }
         
         // Calcular gastos baseado no tipo de orçamento
         let spent = 0
-        if (budget.type === 'CATEGORY' && currentLimit?.categoryId) {
-          // Orçamento por categoria: filtrar transações da categoria específica
+        if (budget.type === 'CATEGORY') {
+          // Orçamento por categoria: somar gastos de todas as categorias do orçamento
+          const categoryIds = budget.limits.map((limit: any) => limit.categoryId).filter(Boolean)
           spent = transactions
-            .filter((t: any) => t.categoryId === currentLimit.categoryId)
+            .filter((t: any) => categoryIds.includes(t.categoryId))
             .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
         } else {
           // Orçamento geral: todas as despesas
@@ -110,6 +123,7 @@ async function loadData() {
         return {
           budget,
           limit: currentLimit,
+          limitAmount,
           spent,
           remaining,
           percentage,
@@ -119,7 +133,15 @@ async function loadData() {
       .sort((a, b) => b.percentage - a.percentage)
     
     // Calcular totais
-    totalBudget.value = analysis.value.reduce((sum, a) => sum + (a.limit ? Number(a.limit.amount) : 0), 0)
+    totalBudget.value = analysis.value.reduce((sum, a) => {
+      if (a.budget.type === 'CATEGORY') {
+        // Para orçamento por categoria, somar todos os limites
+        return sum + (a.budget.limits ? a.budget.limits.reduce((s: number, l: any) => s + Number(l.amount), 0) : 0)
+      } else {
+        // Para orçamento geral, usar o limite atual
+        return sum + (a.limit ? Number(a.limit.amount) : 0)
+      }
+    }, 0)
     totalSpent.value = totalExpenses
     totalRemaining.value = totalBudget.value - totalSpent.value
     
@@ -447,7 +469,7 @@ function exportCSV() {
                 </div>
               </div>
               <div class="text-right">
-                <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(item.limit ? Number(item.limit.amount) : 0) }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(item.limitAmount) }}</p>
                 <p class="text-sm text-gray-600">Limite</p>
               </div>
             </div>
@@ -478,7 +500,7 @@ function exportCSV() {
             <div class="grid grid-cols-3 gap-4">
               <div class="text-center p-3 bg-blue-50 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Limite</p>
-                <p class="text-lg font-bold text-blue-600">{{ formatCurrency(item.limit ? Number(item.limit.amount) : 0) }}</p>
+                <p class="text-lg font-bold text-blue-600">{{ formatCurrency(item.limitAmount) }}</p>
               </div>
               <div class="text-center p-3 bg-red-50 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Gasto</p>

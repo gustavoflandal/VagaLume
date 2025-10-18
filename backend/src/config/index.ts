@@ -33,7 +33,7 @@ interface Config {
     maxRequests: number;
   };
   cors: {
-    origin: string;
+    origin: string | string[];
     methods: string;
     credentials: boolean;
   };
@@ -91,7 +91,7 @@ const config: Config = {
   },
   
   cors: {
-    origin: process.env['CORS_ORIGIN'] || 'http://localhost:5173',
+    origin: process.env['CORS_ORIGIN'] || ['http://localhost:5173', 'http://localhost:5174'],
     methods: process.env['CORS_METHODS'] || 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: process.env['CORS_CREDENTIALS'] === 'true' || true,
   },
