@@ -107,12 +107,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'reports/expenses-by-category',
         name: 'ReportExpensesByCategory',
-        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+        component: () => import('@/views/reports/ExpensesByCategoryView.vue'),
       },
       {
         path: 'reports/income-vs-expenses',
         name: 'ReportIncomeVsExpenses',
-        component: () => import('@/views/reports/ReportsView.vue'), // Temporário
+        component: () => import('@/views/reports/IncomeVsExpensesView.vue'),
       },
       {
         path: 'reports/budget-analysis',
