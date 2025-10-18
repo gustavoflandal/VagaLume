@@ -7,7 +7,6 @@ import generateRecurrencesJob from './generateRecurrences.job';
 import processAutoBudgetsJob from './processAutoBudgets.job';
 import checkBillsJob from './checkBills.job';
 import processWebhooksJob from './processWebhooks.job';
-import recalculatePiggyBanksJob from './recalculatePiggyBanks.job';
 import logger from '@/utils/logger';
 
 export interface CronJob {
@@ -22,7 +21,6 @@ export const jobs: CronJob[] = [
   processAutoBudgetsJob,
   checkBillsJob,
   processWebhooksJob,
-  recalculatePiggyBanksJob,
 ];
 
 /**

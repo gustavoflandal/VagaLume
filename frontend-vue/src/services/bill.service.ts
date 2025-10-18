@@ -4,28 +4,64 @@ import type { ApiResponse } from '@/types'
 export interface Bill {
   id: string
   name: string
-  amountMin: number
-  amountMax: number
+  amount: number
   date: string
   repeatFreq: string
-  skip: number
-  automatch: boolean
+  numberOfInstallments: number
+  isFixedDay: boolean
   active: boolean
+  categoryId?: string
+  accountId?: string
   userId: string
   objectGroupId?: string
   createdAt: string
   updatedAt: string
+  _count?: {
+    installments: number
+  }
 }
 
 export interface CreateBillData {
   name: string
-  amountMin: number
-  amountMax: number
+  amount: number
   date: string
   repeatFreq: string
-  skip?: number
-  automatch?: boolean
+  numberOfInstallments: number
+  isFixedDay?: boolean
+  categoryId?: string
+  accountId?: string
   objectGroupId?: string
+}
+
+export interface BillInstallment {
+  id: string
+  billId: string
+  installmentSequence: number
+  dueDate: string
+  amount: number
+  amountPaid: number
+  paid: boolean
+  paidAt?: string
+  transactionId?: string
+  createdAt: string
+  updatedAt: string
+  bill?: {
+    id: string
+    name: string
+    amount: number
+    repeatFreq: string
+    categoryId?: string
+    accountId?: string
+  }
+}
+
+export interface UpdateInstallmentData {
+  dueDate?: string
+  amount?: number
+  amountPaid?: number
+  paid?: boolean
+  paidAt?: string
+  transactionId?: string
 }
 
 export interface BillStatistics {
@@ -89,6 +125,38 @@ export const billService = {
 
   async getStatistics(): Promise<BillStatistics> {
     const response = await api.get<ApiResponse<BillStatistics>>('/bills/statistics')
+    return response.data.data
+  },
+
+  // Métodos de parcelas
+  async getInstallments(billId: string): Promise<BillInstallment[]> {
+    const response = await api.get<ApiResponse<BillInstallment[]>>(`/bills/${billId}/installments`)
+    return Array.isArray(response.data.data) ? response.data.data : []
+  },
+
+  async getAllInstallments(): Promise<BillInstallment[]> {
+    const response = await api.get<ApiResponse<BillInstallment[]>>('/bills/installments/all')
+    return Array.isArray(response.data.data) ? response.data.data : []
+  },
+
+  async updateInstallment(installmentId: string, data: UpdateInstallmentData): Promise<BillInstallment> {
+    const response = await api.put<ApiResponse<BillInstallment>>(`/bills/installments/${installmentId}`, data)
+    return response.data.data
+  },
+
+  async payInstallment(installmentId: string, transactionId: string): Promise<BillInstallment> {
+    const response = await api.post<ApiResponse<BillInstallment>>(`/bills/installments/${installmentId}/pay`, {
+      transactionId,
+    })
+    return response.data.data
+  },
+
+  async deleteInstallment(installmentId: string): Promise<void> {
+    await api.delete(`/bills/installments/${installmentId}`)
+  },
+
+  async regenerateInstallments(billId: string): Promise<{ count: number }> {
+    const response = await api.post<ApiResponse<{ count: number }>>(`/bills/${billId}/regenerate-installments`)
     return response.data.data
   },
 }

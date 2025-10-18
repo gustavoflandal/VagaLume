@@ -17,7 +17,6 @@ import userRoutes from '@/routes/users';
 import accountRoutes from '@/routes/accounts';
 import transactionRoutes from '@/routes/transactions';
 import categoryRoutes from '@/routes/categories';
-import piggyBankRoutes from '@/routes/piggyBanks';
 import billRoutes from '@/routes/bills';
 import budgetRoutes from '@/routes/budgets';
 import ruleRoutes from '@/routes/rules';
@@ -136,16 +135,6 @@ class App {
             details: 'GET /api/categories/:id',
             update: 'PUT /api/categories/:id',
             delete: 'DELETE /api/categories/:id',
-          },
-          piggyBanks: {
-            list: 'GET /api/piggy-banks',
-            statistics: 'GET /api/piggy-banks/statistics',
-            create: 'POST /api/piggy-banks',
-            details: 'GET /api/piggy-banks/:id',
-            update: 'PUT /api/piggy-banks/:id',
-            delete: 'DELETE /api/piggy-banks/:id',
-            addMoney: 'POST /api/piggy-banks/:id/add-money',
-            removeMoney: 'POST /api/piggy-banks/:id/remove-money',
           },
           bills: {
             list: 'GET /api/bills',
@@ -266,7 +255,6 @@ class App {
     this.app.use('/api/accounts', accountRoutes);
     this.app.use('/api/transactions', transactionRoutes);
     this.app.use('/api/categories', categoryRoutes);
-    this.app.use('/api/piggy-banks', piggyBankRoutes);
     this.app.use('/api/bills', billRoutes);
     this.app.use('/api/budgets', budgetRoutes);
     this.app.use('/api/rules', ruleRoutes);

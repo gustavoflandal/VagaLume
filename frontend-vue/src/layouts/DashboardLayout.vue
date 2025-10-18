@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRouter, RouterLink, RouterView } from 'vue-router'
+import { useRouter, useRoute, RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import {
   Bars3Icon,
@@ -21,6 +21,7 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const isSidebarOpen = ref(true)
@@ -31,12 +32,9 @@ const navigation = [
   { name: 'Contas', to: '/accounts', icon: BanknotesIcon },
   { name: 'Transações', to: '/transactions', icon: ArrowsRightLeftIcon },
   { name: 'Categorias', to: '/categories', icon: TagIcon },
-  { name: 'Cofrinhos', to: '/piggy-banks', icon: PiggyBankIcon },
   { name: 'Contas Recorrentes', to: '/bills', icon: DocumentTextIcon },
   { name: 'Orçamentos', to: '/budgets', icon: ChartBarIcon },
-  { name: 'Regras', to: '/rules', icon: Cog6ToothIcon },
   { name: 'Recorrências', to: '/recurrences', icon: ClockIcon },
-  { name: 'Tags', to: '/tags', icon: TagIcon },
   { name: 'Webhooks', to: '/webhooks', icon: LinkIcon },
   { name: 'Relatórios', to: '/reports', icon: ChartBarIcon },
   { name: 'Configurações', to: '/settings', icon: CogIcon },
@@ -62,12 +60,8 @@ async function handleLogout() {
       ]"
     >
       <!-- Logo -->
-      <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-        <div v-if="isSidebarOpen" class="flex items-center space-x-2">
-          <span class="text-2xl">🔥</span>
-          <span class="font-bold text-xl text-primary-500">VagaLume</span>
-        </div>
-        <span v-else class="text-2xl mx-auto">🔥</span>
+      <div class="flex items-center justify-center h-16 px-4 border-b border-gray-200">
+        <img src="@/assets/logo.png" alt="VagaLume" class="h-16" />
       </div>
 
       <!-- Navigation -->
@@ -115,9 +109,8 @@ async function handleLogout() {
             <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />
             <XMarkIcon v-else class="w-6 h-6" />
           </button>
-          <div class="flex items-center space-x-2">
-            <span class="text-2xl">🔥</span>
-            <span class="font-bold text-xl text-primary-500">VagaLume</span>
+          <div class="flex items-center justify-center flex-1">
+            <img src="@/assets/logo.png" alt="VagaLume" class="h-13" />
           </div>
           <div class="w-6"></div>
         </div>
@@ -148,7 +141,7 @@ async function handleLogout() {
 
       <!-- Main Content Area -->
       <main class="flex-1 overflow-y-auto p-6">
-        <RouterView />
+        <RouterView :key="route.fullPath" />
       </main>
     </div>
   </div>

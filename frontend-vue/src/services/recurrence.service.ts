@@ -35,7 +35,6 @@ export interface CreateRecurrenceData {
     categoryId?: string
     budgetId?: string
     billId?: string
-    piggyBankId?: string
   }
 }
 

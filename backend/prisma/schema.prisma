@@ -34,7 +34,6 @@ model User {
   transactions  Transaction[]
   categories    Category[]
   refreshTokens RefreshToken[]
-  piggyBanks    PiggyBank[]
   bills         Bill[]
   budgets       Budget[]
   ruleGroups    RuleGroup[]
@@ -98,7 +97,7 @@ model Account {
   user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactionsFrom    Transaction[] @relation("TransactionFromAccount")
   transactionsTo      Transaction[] @relation("TransactionToAccount")
-  piggyBanks          PiggyBank[]
+  bills               Bill[]
 
   @@map("accounts")
 }
@@ -139,6 +138,7 @@ model Category {
   parent       Category?     @relation("CategorySubcategories", fields: [parentId], references: [id])
   subcategories Category[]   @relation("CategorySubcategories")
   transactions Transaction[]
+  bills        Bill[]
   notes        Note[]
   attachments  Attachment[]
 
@@ -184,98 +184,77 @@ model Transaction {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relacionamentos
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category    Category?           @relation(fields: [categoryId], references: [id])
-  bill        Bill?               @relation(fields: [billId], references: [id])
-  recurrence  Recurrence?         @relation(fields: [recurrenceId], references: [id])
-  fromAccount Account?            @relation("TransactionFromAccount", fields: [fromAccountId], references: [id])
-  toAccount   Account?            @relation("TransactionToAccount", fields: [toAccountId], references: [id])
-  tags        TransactionTag[]
-  attachments Attachment[]
-  notes       Note[]
-  locations   Location[]
-  piggyBankEvents PiggyBankEvent[]
-  linksFrom   TransactionLink[]   @relation("TransactionLinkFrom")
-  linksTo     TransactionLink[]   @relation("TransactionLinkTo")
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        Category?           @relation(fields: [categoryId], references: [id])
+  bill            Bill?               @relation(fields: [billId], references: [id])
+  recurrence      Recurrence?         @relation(fields: [recurrenceId], references: [id])
+  fromAccount     Account?            @relation("TransactionFromAccount", fields: [fromAccountId], references: [id])
+  toAccount       Account?            @relation("TransactionToAccount", fields: [toAccountId], references: [id])
+  billInstallment BillInstallment?
+  tags            TransactionTag[]
+  attachments     Attachment[]
+  notes           Note[]
+  locations       Location[]
+  linksFrom       TransactionLink[]   @relation("TransactionLinkFrom")
+  linksTo         TransactionLink[]   @relation("TransactionLinkTo")
 
   @@map("transactions")
 }
 
 // ============================================
-// PIGGY BANKS (Cofrinhos/Metas de Economia)
-// ============================================
-
-model PiggyBank {
-  id            String   @id @default(cuid())
-  name          String
-  targetAmount  Decimal  @db.Decimal(15, 2) @map("target_amount")
-  currentAmount Decimal  @default(0.00) @db.Decimal(15, 2) @map("current_amount")
-  startDate     DateTime? @map("start_date")
-  targetDate    DateTime? @map("target_date")
-  order         Int      @default(0)
-  active        Boolean  @default(true)
-  userId        String   @map("user_id")
-  accountId     String?  @map("account_id")
-  objectGroupId String?  @map("object_group_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // Relacionamentos
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account     Account?         @relation(fields: [accountId], references: [id])
-  objectGroup ObjectGroup?     @relation(fields: [objectGroupId], references: [id])
-  events      PiggyBankEvent[]
-  notes       Note[]
-  attachments Attachment[]
-
-  @@map("piggy_banks")
-}
-
-model PiggyBankEvent {
-  id             String      @id @default(cuid())
-  piggyBankId    String      @map("piggy_bank_id")
-  transactionId  String?     @map("transaction_id")
-  amount         Decimal     @db.Decimal(15, 2)
-  date           DateTime
-  createdAt      DateTime    @default(now()) @map("created_at")
-
-  // Relacionamentos
-  piggyBank   PiggyBank    @relation(fields: [piggyBankId], references: [id], onDelete: Cascade)
-  transaction Transaction? @relation(fields: [transactionId], references: [id])
-
-  @@map("piggy_bank_events")
-}
-
 // ============================================
 // BILLS (Assinaturas/Contas Recorrentes)
 // ============================================
 
 model Bill {
-  id               String    @id @default(cuid())
-  name             String
-  amountMin        Decimal   @db.Decimal(15, 2) @map("amount_min")
-  amountMax        Decimal   @db.Decimal(15, 2) @map("amount_max")
-  date             DateTime  // Data esperada de pagamento
-  endDate          DateTime? @map("end_date")
-  extensionDate    DateTime? @map("extension_date")
-  repeatFreq       String    @map("repeat_freq") // monthly, weekly, quarterly, etc
-  skip             Int       @default(0)
-  active           Boolean   @default(true)
-  autoMatch        Boolean   @default(true) @map("auto_match")
-  userId           String    @map("user_id")
-  objectGroupId    String?   @map("object_group_id")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  name              String
+  amount            Decimal   @db.Decimal(15, 2) // Valor da parcela
+  date              DateTime  // Data inicial de vencimento
+  repeatFreq        String    @map("repeat_freq") // monthly, weekly, quarterly, etc
+  numberOfInstallments Int    @map("number_of_installments") // Número de parcelas
+  isFixedDay        Boolean   @default(true) @map("is_fixed_day") // true = data específica, false = dias corridos
+  active            Boolean   @default(true)
+  categoryId        String?   @map("category_id") // Categoria para débito
+  accountId         String?   @map("account_id") // Conta para débito
+  userId            String    @map("user_id")
+  objectGroupId     String?   @map("object_group_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   // Relacionamentos
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  objectGroup  ObjectGroup?  @relation(fields: [objectGroupId], references: [id])
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category?         @relation(fields: [categoryId], references: [id])
+  account      Account?          @relation(fields: [accountId], references: [id])
+  objectGroup  ObjectGroup?      @relation(fields: [objectGroupId], references: [id])
+  installments BillInstallment[]
   transactions Transaction[]
   notes        Note[]
   attachments  Attachment[]
   rules        Rule[]
 
   @@map("bills")
+}
+
+// Parcelas das Contas Recorrentes
+model BillInstallment {
+  id                   String       @id @default(cuid())
+  billId               String       @map("bill_id")
+  installmentSequence  Int          @map("installment_sequence") // Sequência da parcela (1, 2, 3...)
+  dueDate              DateTime     @map("due_date") // Data de vencimento
+  amount               Decimal      @db.Decimal(15, 2) // Valor da parcela
+  amountPaid           Decimal      @default(0) @db.Decimal(15, 2) @map("amount_paid") // Valor pago
+  paid                 Boolean      @default(false) // Status de pagamento
+  paidAt               DateTime?    @map("paid_at") // Data do pagamento
+  transactionId        String?      @unique @map("transaction_id") // Transação vinculada
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  bill        Bill         @relation(fields: [billId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@map("bill_installments")
 }
 
 // ============================================
@@ -500,7 +479,6 @@ model RecurrenceTransaction {
   categoryId      String?  @map("category_id")
   budgetId        String?  @map("budget_id")
   billId          String?  @map("bill_id")
-  piggyBankId     String?  @map("piggy_bank_id")
   type            TransactionType
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -569,7 +547,6 @@ model TransactionTag {
 
 enum AttachableType {
   TRANSACTION
-  PIGGY_BANK
   BILL
   BUDGET
   CATEGORY
@@ -596,7 +573,6 @@ model Attachment {
   // Relacionamentos polimórficos (simulados)
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   transaction Transaction? @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_transaction_fk")
-  piggyBank   PiggyBank?   @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_piggybank_fk")
   bill        Bill?        @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_bill_fk")
   budget      Budget?      @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_budget_fk")
   category    Category?    @relation(fields: [attachableId], references: [id], onDelete: Cascade, map: "attachment_category_fk")
@@ -612,7 +588,6 @@ model Attachment {
 
 enum NoteableType {
   TRANSACTION
-  PIGGY_BANK
   BILL
   BUDGET
   CATEGORY
@@ -631,7 +606,6 @@ model Note {
 
   // Relacionamentos polimórficos (simulados)
   transaction Transaction? @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_transaction_fk")
-  piggyBank   PiggyBank?   @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_piggybank_fk")
   bill        Bill?        @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_bill_fk")
   budget      Budget?      @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_budget_fk")
   category    Category?    @relation(fields: [noteableId], references: [id], onDelete: Cascade, map: "note_category_fk")
@@ -682,7 +656,6 @@ model ObjectGroup {
 
   // Relacionamentos
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  piggyBanks PiggyBank[]
   bills      Bill[]
 
   @@map("object_groups")

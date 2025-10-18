@@ -63,7 +63,6 @@ VagaLume utiliza o sistema de **contabilidade de partida dupla** para garantir p
 - ✅ Transações (receitas, despesas, transferências)
 - ✅ Categorização automática e manual
 - ✅ Orçamentos mensais e anuais
-- ✅ Metas de economia (cofrinhos digitais)
 - ✅ Saldos em tempo real
 
 ### **📈 Relatórios e Analytics**
