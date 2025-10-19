@@ -1,0 +1,10 @@
+version: "3.9"
+
+# Configuração para acesso LOCAL (localhost)
+# Use: docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
+
+services:
+  frontend:
+    environment:
+      # Para acesso via localhost
+      VITE_API_URL: http://localhost:3001/api

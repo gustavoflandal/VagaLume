@@ -1,0 +1,10 @@
+version: "3.9"
+
+# Configuração para acesso em REDE (outros dispositivos)
+# Use: docker-compose -f docker-compose.yml -f docker-compose.network.yml up -d
+
+services:
+  frontend:
+    environment:
+      # Substitua pelo IP da sua máquina
+      VITE_API_URL: http://192.168.1.21:3001/api

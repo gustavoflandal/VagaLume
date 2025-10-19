@@ -35,11 +35,12 @@ services:
       DATABASE_URL: mysql://vagalume:vagalume123@db:3306/vagalume  # Porta interna do container
       PORT: 3001
       NODE_ENV: production
+      CORS_ORIGIN: "*"  # Permite acesso de qualquer origem
     depends_on:
       db:
         condition: service_healthy
     ports:
-      - "3001:3001"
+      - "0.0.0.0:3001:3001"  # Expõe em todas as interfaces de rede
 
   frontend:
     build:
@@ -48,11 +49,12 @@ services:
     container_name: vagalume-frontend
     restart: always
     environment:
-      VITE_API_URL: http://backend:3001/api
+      # URL acessível do navegador (não do container)
+      VITE_API_URL: http://192.168.1.21:3001/api
     depends_on:
       - backend
     ports:
-      - "5173:80"
+      - "0.0.0.0:8080:80"  # Expõe na porta 8080 em todas as interfaces de rede
 
 volumes:
   vagalumenew_db_data:
