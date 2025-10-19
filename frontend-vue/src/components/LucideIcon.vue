@@ -6,13 +6,13 @@ interface Props {
   name: string
   size?: number
   strokeWidth?: number
-  class?: string
+  'class'?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 24,
   strokeWidth: 2,
-  class: ''
+  'class': ''
 })
 
 // Verificar se é um emoji
@@ -33,10 +33,10 @@ const iconComponent = computed(() => {
     :is="iconComponent"
     :size="size"
     :stroke-width="strokeWidth"
-    :class="class"
+    :class="props.class"
   />
-  <span v-else-if="isEmoji" :class="class" :style="{ fontSize: `${size}px` }">
+  <span v-else-if="isEmoji" :class="props.class" :style="{ fontSize: `${size}px` }">
     {{ name }}
   </span>
-  <span v-else :class="class" class="text-gray-400">?</span>
+  <span v-else :class="props.class" class="text-gray-400">?</span>
 </template>

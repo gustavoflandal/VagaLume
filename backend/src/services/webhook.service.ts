@@ -1,22 +1,25 @@
-import { WebhookTrigger, WebhookResponse, WebhookDelivery } from '@prisma/client';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
+type WebhookTriggerDTO = 'STORE_TRANSACTION' | 'UPDATE_TRANSACTION' | 'DESTROY_TRANSACTION' | 'STORE_BUDGET' | 'UPDATE_BUDGET' | 'DESTROY_BUDGET' | 'STORE_UPDATE_BUDGET_LIMIT';
+type WebhookResponseDTO = 'TRANSACTIONS' | 'ACCOUNTS' | 'BUDGET' | 'NONE';
+type WebhookDeliveryDTO = 'JSON';
+
 export interface CreateWebhookDTO {
   title: string;
   url: string;
-  trigger: WebhookTrigger;
-  response: WebhookResponse;
-  delivery?: WebhookDelivery;
+  trigger: WebhookTriggerDTO;
+  response: WebhookResponseDTO;
+  delivery?: WebhookDeliveryDTO;
 }
 
 export interface UpdateWebhookDTO {
   title?: string;
   url?: string;
-  trigger?: WebhookTrigger;
-  response?: WebhookResponse;
-  delivery?: WebhookDelivery;
+  trigger?: WebhookTriggerDTO;
+  response?: WebhookResponseDTO;
+  delivery?: WebhookDeliveryDTO;
   active?: boolean;
 }
 
@@ -320,15 +323,26 @@ class WebhookService {
     });
 
     const total = webhooks.length;
-    const active = webhooks.filter((w) => w.active).length;
-    const totalMessages = webhooks.reduce(
-      (sum, w) => sum + w.messages.length,
-      0
-    );
-    const sentMessages = webhooks.reduce(
-      (sum, w) => sum + w.messages.filter((m) => m.sent).length,
-      0
-    );
+
+    let active = 0;
+
+    for (const webhook of webhooks) {
+      if (webhook.active) {
+        active += 1;
+      }
+    }
+
+    let totalMessages = 0;
+    let sentMessages = 0;
+
+    for (const webhook of webhooks) {
+      totalMessages += webhook.messages.length;
+      for (const message of webhook.messages) {
+        if (message.sent) {
+          sentMessages += 1;
+        }
+      }
+    }
     const pendingMessages = totalMessages - sentMessages;
 
     return {

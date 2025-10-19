@@ -1,4 +1,5 @@
-import { AutoBudgetType, AutoBudgetPeriod } from '@prisma/client';
+type AutoBudgetType = 'RESET' | 'ROLLOVER' | 'ADJUSTED';
+type AutoBudgetPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEAR' | 'YEARLY';
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';

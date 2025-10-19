@@ -1,106 +1,58 @@
+version: "3.9"
+
 services:
-  # Banco de Dados MySQL 8.0 LTS
-  database:
-    image: mysql:8.0.35-debian
-    container_name: vagalume_db
-    restart: unless-stopped
+  db:
+    image: mysql:8.0
+    container_name: vagalume-db
+    restart: always
     environment:
       MYSQL_DATABASE: vagalume
       MYSQL_USER: vagalume
       MYSQL_PASSWORD: vagalume123
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_CHARSET: utf8mb4
-      MYSQL_COLLATION: utf8mb4_unicode_ci
+      MYSQL_ROOT_PASSWORD: rootpass
+      TZ: America/Sao_Paulo
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    networks:
-      - vagalume_network
+      - vagalumenew_db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vagalume", "-pvagalume123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
-  # Cache Redis (opcional)
-  redis:
-    image: redis:7-alpine
-    container_name: vagalume_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - vagalume_network
-
-  # Backend API
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
-    container_name: vagalume_backend
-    restart: unless-stopped
+      dockerfile: Dockerfile
+    container_name: vagalume-backend
+    restart: on-failure
+    env_file:
+      - ./backend/.env.docker
     environment:
-      NODE_ENV: development
-      DATABASE_URL: mysql://vagalume:vagalume123@database:3306/vagalume
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: mysql://vagalume:vagalume123@db:3306/vagalume  # Porta interna do container
+      PORT: 3001
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "3001:3001"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-      - uploads_data:/app/uploads
-    depends_on:
-      - database
-      - redis
-    networks:
-      - vagalume_network
-    command: npm run dev
 
-  # Frontend Vue.js
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: vagalume_frontend
-    restart: unless-stopped
+      context: ./frontend-vue
+      dockerfile: Dockerfile
+    container_name: vagalume-frontend
+    restart: always
     environment:
-      NODE_ENV: development
-      VITE_API_BASE_URL: http://localhost:3001/api
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      VITE_API_URL: http://backend:3001/api
     depends_on:
       - backend
-    networks:
-      - vagalume_network
-    command: npm run dev
-
-  # Nginx Reverse Proxy (opcional)
-  nginx:
-    image: nginx:alpine
-    container_name: vagalume_nginx
-    restart: unless-stopped
     ports:
-      - "80:80"
-    volumes:
-      - ./docker/nginx/nginx.dev.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - vagalume_network
+      - "5173:80"
 
 volumes:
-  mysql_data:
-  redis_data:
-  uploads_data:
-
-networks:
-  vagalume_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.0.0/16
+  vagalumenew_db_data:

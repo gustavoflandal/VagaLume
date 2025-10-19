@@ -1,4 +1,4 @@
-import { AttachableType } from '@prisma/client';
+type AttachableType = 'TRANSACTION' | 'CATEGORY' | 'BILL' | 'BUDGET' | 'TAG';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
 
@@ -131,15 +131,19 @@ class AttachmentService {
     });
 
     const total = attachments.length;
-    const uploaded = attachments.filter((a) => a.uploaded).length;
-    const pending = total - uploaded;
-    const totalSize = attachments.reduce((sum, a) => sum + a.size, 0);
+    let uploaded = 0;
+    let totalSize = 0;
+    const byType: Record<string, number> = {};
 
-    // Agrupa por tipo
-    const byType = attachments.reduce((acc, a) => {
-      acc[a.attachableType] = (acc[a.attachableType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    for (const attachment of attachments) {
+      if (attachment.uploaded) {
+        uploaded++;
+      }
+      totalSize += attachment.size;
+      byType[attachment.attachableType] = (byType[attachment.attachableType] || 0) + 1;
+    }
+
+    const pending = total - uploaded;
 
     return {
       total,

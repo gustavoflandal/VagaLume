@@ -1,4 +1,6 @@
-import { AutoBudgetType, AutoBudgetPeriod, BudgetType } from '@prisma/client';
+type AutoBudgetType = 'RESET' | 'ROLLOVER' | 'ADJUSTED';
+type AutoBudgetPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEAR' | 'YEARLY';
+type BudgetType = 'GENERAL' | 'CATEGORY';
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
@@ -89,7 +91,7 @@ class BudgetService {
     const budget = await prisma.budget.create({
       data: {
         name: data.name,
-        type: data.type || BudgetType.GENERAL,
+        type: data.type || 'GENERAL',
         order: data.order ?? 0,
         userId,
       },
@@ -139,12 +141,12 @@ class BudgetService {
       logger.info('[createLimit] Budget encontrado:', { id: budget.id, type: budget.type });
 
       // Validações baseadas no tipo de orçamento
-      if (budget.type === BudgetType.CATEGORY && !data.categoryId) {
+      if (budget.type === 'CATEGORY' && !data.categoryId) {
         logger.error('[createLimit] Erro: Categoria obrigatória para orçamento por categoria');
         throw new Error('Categoria é obrigatória para orçamento por categoria');
       }
 
-      if (budget.type === BudgetType.GENERAL && data.categoryId) {
+      if (budget.type === 'GENERAL' && data.categoryId) {
         logger.error('[createLimit] Erro: Orçamento geral não pode ter categoria');
         throw new Error('Orçamento geral não pode ter categoria específica');
       }
@@ -294,7 +296,10 @@ class BudgetService {
       },
     });
 
-    const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+    let total = 0;
+    for (const transaction of transactions) {
+      total += Number(transaction.amount);
+    }
 
     return { total, transactions: transactions.length };
   }
@@ -307,15 +312,19 @@ class BudgetService {
 
     // Busca limite atual
     const now = new Date();
-    const currentLimit = budget.limits.find(
-      (l) => new Date(l.startDate) <= now && new Date(l.endDate) >= now
-    );
+    let currentLimit: typeof budget.limits[number] | null = null;
+    for (const limit of budget.limits) {
+      if (new Date(limit.startDate) <= now && new Date(limit.endDate) >= now) {
+        currentLimit = limit;
+        break;
+      }
+    }
 
     if (!currentLimit) {
       return { exceeded: false, message: 'Nenhum limite ativo' };
     }
 
-    const { total } = await this.getCurrentSpending(
+    const spending = await this.getCurrentSpending(
       budgetId,
       userId,
       new Date(currentLimit.startDate),
@@ -323,6 +332,7 @@ class BudgetService {
     );
 
     const limitAmount = Number(currentLimit.amount);
+    const total = spending.total;
     const exceeded = total > limitAmount;
     const percentage = (total / limitAmount) * 100;
 

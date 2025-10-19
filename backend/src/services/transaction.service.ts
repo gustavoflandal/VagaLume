@@ -1,17 +1,19 @@
-import { TransactionType, TransactionStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
 
+type TransactionTypeEnum = 'INCOME' | 'EXPENSE' | 'TRANSFER';
+type TransactionStatusEnum = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+
 export interface CreateTransactionDTO {
   description: string;
   amount: number;
-  type: TransactionType;
+  type: TransactionTypeEnum;
   date: Date;
   fromAccountId?: string;
   toAccountId?: string;
   categoryId?: string;
-  status?: TransactionStatus;
+  status?: TransactionStatusEnum;
   notes?: string;
   tags?: string[];
   attachments?: string[];
@@ -20,20 +22,20 @@ export interface CreateTransactionDTO {
 export interface UpdateTransactionDTO {
   description?: string;
   amount?: number;
-  type?: TransactionType;
+  type?: TransactionTypeEnum;
   date?: Date;
   fromAccountId?: string;
   toAccountId?: string;
   categoryId?: string;
-  status?: TransactionStatus;
+  status?: TransactionStatusEnum;
   notes?: string;
   tags?: string[];
   attachments?: string[];
 }
 
 export interface TransactionFilters {
-  type?: TransactionType;
-  status?: TransactionStatus;
+  type?: TransactionTypeEnum;
+  status?: TransactionStatusEnum;
   categoryId?: string;
   accountId?: string;
   startDate?: Date;

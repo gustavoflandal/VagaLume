@@ -316,9 +316,12 @@ class RuleService {
     });
 
     // Filtra transações que correspondem aos triggers
-    const matches = transactions.filter((transaction) =>
-      this.matchesRule(transaction, rule)
-    );
+    const matches: typeof transactions = [];
+    for (const transaction of transactions) {
+      if (this.matchesRule(transaction, rule)) {
+        matches.push(transaction);
+      }
+    }
 
     return {
       totalTransactions: transactions.length,

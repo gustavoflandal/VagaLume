@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Calendar, Download, TrendingUp, TrendingDown } from 'lucide-vue-next'
+import { ArrowLeft, Download, TrendingUp, TrendingDown } from 'lucide-vue-next'
 import { transactionService } from '@/services/transaction.service'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js'
 import { Line, Bar } from 'vue-chartjs'

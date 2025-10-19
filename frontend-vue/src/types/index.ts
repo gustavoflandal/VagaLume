@@ -53,6 +53,8 @@ export interface Account {
   userId: string
   createdAt: string
   updatedAt: string
+  icon?: string
+  color?: string
 }
 
 export interface CreateAccountData {

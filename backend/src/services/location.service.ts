@@ -1,13 +1,14 @@
-import { LocatableType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
+
+type LocatableTypeEnum = 'TRANSACTION' | 'TAG';
 
 export interface CreateLocationDTO {
   latitude: number;
   longitude: number;
   zoomLevel?: number;
-  locatableType: LocatableType;
+  locatableType: LocatableTypeEnum;
   locatableId: string;
 }
 
@@ -36,7 +37,7 @@ class LocationService {
   /**
    * Busca location de uma entidade
    */
-  async findByEntity(locatableType: LocatableType, locatableId: string) {
+  async findByEntity(locatableType: LocatableTypeEnum, locatableId: string) {
     const location = await prisma.location.findFirst({
       where: {
         locatableType,
@@ -133,19 +134,29 @@ class LocationService {
       },
     });
 
-    // Calcula distância exata e filtra
-    return locations
-      .map((loc) => ({
-        ...loc,
-        distance: this.calculateDistance(
-          latitude,
-          longitude,
-          Number(loc.latitude),
-          Number(loc.longitude)
-        ),
-      }))
-      .filter((loc) => loc.distance <= radiusKm)
-      .sort((a, b) => a.distance - b.distance);
+    const locationsWithinRadius: Array<
+      (typeof locations)[number] & { distance: number }
+    > = [];
+
+    for (const loc of locations) {
+      const distance = this.calculateDistance(
+        latitude,
+        longitude,
+        Number(loc.latitude),
+        Number(loc.longitude)
+      );
+
+      if (distance <= radiusKm) {
+        locationsWithinRadius.push({
+          ...loc,
+          distance,
+        });
+      }
+    }
+
+    locationsWithinRadius.sort((a, b) => a.distance - b.distance);
+
+    return locationsWithinRadius;
   }
 
   /**

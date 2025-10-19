@@ -9,6 +9,9 @@ export interface Budget {
   userId: string
   createdAt: string
   updatedAt: string
+  order?: number
+  limits?: BudgetLimit[]
+  autoBudget?: AutoBudget | null
 }
 
 export interface BudgetLimit {
@@ -21,16 +24,18 @@ export interface BudgetLimit {
   createdAt: string
   updatedAt: string
   category?: any // Relacionamento com categoria
+  currency?: string
 }
 
 export interface AutoBudget {
   id: string
   budgetId: string
   type: 'RESET' | 'ROLLOVER' | 'ADJUSTED'
-  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY'
+  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEAR' | 'YEARLY'
   amount: number
   createdAt: string
   updatedAt: string
+  currency?: string
 }
 
 export interface CreateBudgetData {
@@ -51,7 +56,7 @@ export interface CreateBudgetLimitData {
 
 export interface CreateAutoBudgetData {
   type: 'RESET' | 'ROLLOVER' | 'ADJUSTED'
-  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY'
+  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'HALF_YEAR' | 'YEARLY'
   amount: number
   currency?: string
 }

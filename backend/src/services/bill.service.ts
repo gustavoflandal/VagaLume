@@ -206,7 +206,12 @@ class BillService {
     repeatFreq: string,
     isFixedDay: boolean
   ) {
-    const installments = [];
+    const installments: Array<{
+      billId: string;
+      installmentSequence: number;
+      dueDate: Date;
+      amount: Decimal;
+    }> = [];
     let currentDate = new Date(startDate);
 
     for (let i = 1; i <= numberOfInstallments; i++) {
@@ -490,7 +495,12 @@ class BillService {
     }
 
     // Gerar parcelas faltantes baseado na QUANTIDADE necessária
-    const newInstallments = [];
+    const newInstallments: Array<{
+      billId: string;
+      installmentSequence: number;
+      dueDate: Date;
+      amount: Decimal;
+    }> = [];
     for (let i = 0; i < parcelasParaGerar; i++) {
       const sequenceNumber = maxSequence + i + 1;
       newInstallments.push({
@@ -607,21 +617,24 @@ class BillService {
   async getUpcoming(userId: string, days = 7) {
     const bills = await this.findAll(userId);
 
-    const upcoming = bills
-      .map((bill) => {
-        const nextDate = this.getNextExpectedDate(bill);
-        const daysUntil = Math.ceil(
-          (nextDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-        );
-
-        return {
+    const upcoming: Array<typeof bills[number] & { nextDate: Date; daysUntil: number }> = [];
+    
+    for (const bill of bills) {
+      const nextDate = this.getNextExpectedDate(bill);
+      const daysUntil = Math.ceil(
+        (nextDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      );
+      
+      if (daysUntil <= days && daysUntil >= 0) {
+        upcoming.push({
           ...bill,
           nextDate,
           daysUntil,
-        };
-      })
-      .filter((bill) => bill.daysUntil <= days && bill.daysUntil >= 0)
-      .sort((a, b) => a.daysUntil - b.daysUntil);
+        });
+      }
+    }
+    
+    upcoming.sort((a, b) => a.daysUntil - b.daysUntil);
 
     return upcoming;
   }
@@ -633,24 +646,26 @@ class BillService {
     const bills = await this.findAll(userId);
 
     const total = bills.length;
-    const active = bills.filter((b) => b.active).length;
-
-    const monthlyExpected = bills
-      .filter((b) => b.active)
-      .reduce((sum, bill) => {
+    let active = 0;
+    let monthlyExpected = 0;
+    
+    const freqMultiplier: Record<string, number> = {
+      daily: 30,
+      weekly: 4,
+      monthly: 1,
+      quarterly: 1 / 3,
+      'half-year': 1 / 6,
+      yearly: 1 / 12,
+    };
+    
+    for (const bill of bills) {
+      if (bill.active) {
+        active++;
         const amount = Number(bill.amount);
-        // Converte para mensal baseado na frequência
-        const freqMultiplier: Record<string, number> = {
-          daily: 30,
-          weekly: 4,
-          monthly: 1,
-          quarterly: 1 / 3,
-          'half-year': 1 / 6,
-          yearly: 1 / 12,
-        };
         const multiplier = freqMultiplier[bill.repeatFreq] || 1;
-        return sum + amount * multiplier;
-      }, 0);
+        monthlyExpected += amount * multiplier;
+      }
+    }
 
     return {
       total,

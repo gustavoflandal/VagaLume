@@ -134,19 +134,28 @@ class TagService {
       },
     });
 
-    // Calcula uso e ordena
-    const cloud = tags
-      .map((tag) => ({
-        id: tag.id,
-        tag: tag.tag,
-        description: tag.description,
-        count: tag.transactions.length,
-      }))
-      .filter((t) => t.count > 0)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, limit);
+    const cloud: Array<{
+      id: string;
+      tag: string;
+      description: string | null;
+      count: number;
+    }> = [];
 
-    return cloud;
+    for (const tag of tags) {
+      const usageCount = tag.transactions.length;
+      if (usageCount > 0) {
+        cloud.push({
+          id: tag.id,
+          tag: tag.tag,
+          description: tag.description ?? null,
+          count: usageCount,
+        });
+      }
+    }
+
+    cloud.sort((a, b) => b.count - a.count);
+
+    return cloud.slice(0, limit);
   }
 
   /**
@@ -253,9 +262,19 @@ class TagService {
     });
 
     const total = tags.length;
-    const used = tags.filter((t) => t.transactions.length > 0).length;
+
+    let used = 0;
+    let totalUsage = 0;
+
+    for (const tag of tags) {
+      const usage = tag.transactions.length;
+      totalUsage += usage;
+      if (usage > 0) {
+        used += 1;
+      }
+    }
+
     const unused = total - used;
-    const totalUsage = tags.reduce((sum, t) => sum + t.transactions.length, 0);
     const avgUsage = total > 0 ? totalUsage / total : 0;
 
     return {

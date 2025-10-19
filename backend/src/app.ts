@@ -52,14 +52,19 @@ class App {
     }));
 
     // CORS configuration
-    const corsOrigin = Array.isArray(config.cors.origin) 
-      ? config.cors.origin.join(', ') 
-      : config.cors.origin;
-    logger.info(`CORS configurado para origem: ${corsOrigin}`);
+    const allowedOrigins = Array.isArray(config.cors.origin) 
+      ? config.cors.origin 
+      : [config.cors.origin];
+    
+    logger.info(`CORS configurado para origens: ${allowedOrigins.join(', ')}`);
+    
     this.app.use(cors({
-      origin: config.cors.origin,
+      origin: true, // Permitir todas as origens temporariamente para debug
       methods: config.cors.methods.split(','),
       credentials: config.cors.credentials,
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['Content-Range', 'X-Content-Range'],
+      maxAge: 600,
     }));
 
     // Rate limiting

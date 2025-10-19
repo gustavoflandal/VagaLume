@@ -1,4 +1,4 @@
-import { AccountType } from '@prisma/client';
+type AccountType = 'CHECKING' | 'SAVINGS' | 'CREDIT_CARD' | 'INVESTMENT' | 'CASH' | 'OTHER';
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '@/config/database';
 import logger from '@/utils/logger';
@@ -123,15 +123,16 @@ class AccountService {
       where: { userId, isActive: true },
     });
 
-    const summary = accounts.reduce(
-      (acc, account) => {
-        const balance = Number(account.balance);
-        acc.total += balance;
-        acc.byType[account.type] = (acc.byType[account.type] || 0) + balance;
-        return acc;
-      },
-      { total: 0, byType: {} as Record<string, number> }
-    );
+    const summary: { total: number; byType: Record<string, number> } = {
+      total: 0,
+      byType: {},
+    };
+
+    for (const account of accounts) {
+      const balance = Number(account.balance);
+      summary.total += balance;
+      summary.byType[account.type] = (summary.byType[account.type] || 0) + balance;
+    }
 
     return summary;
   }

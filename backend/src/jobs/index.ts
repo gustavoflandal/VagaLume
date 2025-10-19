@@ -3,8 +3,8 @@
  * Gerencia a execução de todos os cron jobs do sistema
  */
 
-import generateRecurrencesJob from './generateRecurrences.job';
-import processAutoBudgetsJob from './processAutoBudgets.job';
+// import generateRecurrencesJob from './generateRecurrences.job'; // Temporariamente desabilitado
+// import processAutoBudgetsJob from './processAutoBudgets.job'; // Temporariamente desabilitado
 import checkBillsJob from './checkBills.job';
 import processWebhooksJob from './processWebhooks.job';
 import logger from '@/utils/logger';
@@ -17,8 +17,8 @@ export interface CronJob {
 
 // Lista de todos os jobs
 export const jobs: CronJob[] = [
-  generateRecurrencesJob,
-  processAutoBudgetsJob,
+  // generateRecurrencesJob, // Temporariamente desabilitado
+  // processAutoBudgetsJob, // Temporariamente desabilitado
   checkBillsJob,
   processWebhooksJob,
 ];

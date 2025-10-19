@@ -29,11 +29,6 @@ const totalBudget = ref(0)
 const totalSpent = ref(0)
 const totalRemaining = ref(0)
 
-const selectedBudget = computed(() => {
-  if (!selectedBudgetId.value) return null
-  return budgets.value.find(b => b.id === selectedBudgetId.value)
-})
-
 // Filtro de período (mês atual por padrão)
 const now = new Date()
 const startDate = ref(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0])
